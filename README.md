@@ -1,3 +1,5 @@
+<img width="1912" height="1237" alt="image" src="https://github.com/user-attachments/assets/61cce776-ed72-41ce-86b3-5eedf4d96aa4" />
+
 # LocalGen AI
 
 LocalGen AI is a self-hosted, privacy-first AI image generation platform. It runs entirely locally on your hardware, ensuring no external API keys or cloud dependencies are required.
