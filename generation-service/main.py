@@ -81,10 +81,13 @@ async def generate_image_api(
     prompt: str = Form(...),
     width: int = Form(...),
     height: int = Form(...),
+    negative_prompt: Optional[str] = Form(None),
+    guidance_scale: float = Form(7.5),
+    num_inference_steps: int = Form(30),
     init_image: Optional[UploadFile] = File(None)
 ):
     init_image_bytes = await init_image.read() if init_image else None
-    image = generate_image(prompt, width, height, init_image_bytes)
+    image = generate_image(prompt, width, height, init_image_bytes, negative_prompt, guidance_scale, num_inference_steps)
     
     # Save the image and the prompt to the outputs directory
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

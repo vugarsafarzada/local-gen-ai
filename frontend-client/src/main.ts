@@ -8,6 +8,11 @@ const generateButton = document.querySelector<HTMLButtonElement>('#generate-butt
 const downloadButton = document.querySelector<HTMLButtonElement>('#download-button');
 const imageDisplay = document.querySelector<HTMLDivElement>('#image-display');
 const historyList = document.querySelector<HTMLDivElement>('#history-list'); // Changed from historyGrid to historyList
+const negativePromptInput = document.querySelector<HTMLTextAreaElement>('#negative-prompt');
+const guidanceScaleInput = document.querySelector<HTMLInputElement>('#guidance-scale');
+const guidanceScaleValue = document.querySelector<HTMLSpanElement>('#guidance-scale-value');
+const inferenceStepsInput = document.querySelector<HTMLInputElement>('#inference-steps');
+const inferenceStepsValue = document.querySelector<HTMLSpanElement>('#inference-steps-value');
 
 // Assuming the backend is running on http://localhost:8000
 const BACKEND_URL = '/api'; // Updated to use the Vite proxy
@@ -109,7 +114,7 @@ const updateClearButtonVisibility = () => {
     }
 };
 
-if (generateButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton) {
+if (generateButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue) {
     // Initial fetch and render history
     fetchAndRenderHistory();
 
@@ -123,6 +128,15 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
     clearImageButton.addEventListener('click', () => {
         initImageInput.value = ''; // Clear the file input
         updateClearButtonVisibility(); // Update button visibility
+    });
+
+    // Event listeners for sliders
+    guidanceScaleInput.addEventListener('input', () => {
+        guidanceScaleValue.textContent = guidanceScaleInput.value;
+    });
+
+    inferenceStepsInput.addEventListener('input', () => {
+        inferenceStepsValue.textContent = inferenceStepsInput.value;
     });
 
     // Event listener for Delete History Button
@@ -149,6 +163,9 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
         const width = parseInt(widthInput.value, 10);
         const height = parseInt(heightInput.value, 10);
         const initImage = initImageInput.files ? initImageInput.files[0] : null;
+        const negativePrompt = negativePromptInput.value;
+        const guidanceScale = parseFloat(guidanceScaleInput.value);
+        const inferenceSteps = parseInt(inferenceStepsInput.value, 10);
 
         if (!prompt) {
             alert('Please enter a prompt!');
@@ -176,6 +193,11 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
             formData.append('prompt', prompt);
             formData.append('width', String(width));
             formData.append('height', String(height));
+            if (negativePrompt) {
+                formData.append('negative_prompt', negativePrompt);
+            }
+            formData.append('guidance_scale', String(guidanceScale));
+            formData.append('num_inference_steps', String(inferenceSteps));
             if (initImage) {
                 formData.append('init_image', initImage);
             }

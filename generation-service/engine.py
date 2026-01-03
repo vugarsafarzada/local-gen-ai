@@ -34,7 +34,10 @@ def generate_image(
     prompt: str,
     width: Optional[int] = None,
     height: Optional[int] = None,
-    init_image_bytes: Optional[bytes] = None
+    init_image_bytes: Optional[bytes] = None,
+    negative_prompt: Optional[str] = None,
+    guidance_scale: float = 7.5,
+    num_inference_steps: int = 30
 ):
     """
     Generates an image from a text prompt, optionally using an initial image.
@@ -50,11 +53,24 @@ def generate_image(
         init_image = init_image.resize((width, height))
         
         # Simple generation for now, can be expanded with more parameters later
-        image = pipeline(prompt=prompt, image=init_image).images[0]
+        image = pipeline(
+            prompt=prompt, 
+            image=init_image, 
+            negative_prompt=negative_prompt, 
+            guidance_scale=guidance_scale, 
+            num_inference_steps=num_inference_steps
+        ).images[0]
 
     else:
         # Text-to-Image generation
         pipeline = load_txt2img_model()
-        image = pipeline(prompt=prompt, width=width, height=height).images[0]
+        image = pipeline(
+            prompt=prompt, 
+            width=width, 
+            height=height, 
+            negative_prompt=negative_prompt, 
+            guidance_scale=guidance_scale, 
+            num_inference_steps=num_inference_steps
+        ).images[0]
         
     return image
