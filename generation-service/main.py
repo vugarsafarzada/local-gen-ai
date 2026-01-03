@@ -6,13 +6,23 @@ from typing import Optional, List
 from datetime import datetime
 import os
 
-from engine import generate_image
+from engine import generate_image, load_txt2img_model, load_img2img_model
 
 # Ensure the output directory exists
 OUTPUTS_DIR = "outputs"
 os.makedirs(OUTPUTS_DIR, exist_ok=True)
 
 app = FastAPI()
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Load the models on startup.
+    """
+    print("--- Application startup: Loading models...")
+    load_txt2img_model()
+    load_img2img_model()
+    print("--- Models loaded successfully.")
 
 # Mount the outputs directory to serve static files
 app.mount(f"/{OUTPUTS_DIR}", StaticFiles(directory=OUTPUTS_DIR), name="outputs")
