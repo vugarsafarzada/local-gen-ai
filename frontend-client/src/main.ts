@@ -182,7 +182,7 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
             data.models.forEach((modelName: string) => {
                 const option = document.createElement('option');
                 option.value = modelName;
-                option.textContent = modelName.replace(/\.(safetensors|ckpt)$/, '');
+                option.textContent = modelName;
                 modelSelector.appendChild(option);
             });
         } catch (error) {
@@ -203,7 +203,7 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
                     if (loraName !== "None") {
                         const option = document.createElement('option');
                         option.value = loraName;
-                        option.textContent = loraName.replace(/\.(safetensors|ckpt)$/, '');
+                        option.textContent = loraName;
                         loraSelector.appendChild(option);
                     }
                 });
