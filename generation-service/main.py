@@ -10,7 +10,7 @@ import asyncio
 import threading
 from pydantic import BaseModel
 
-from engine import generate_image, load_model, get_available_models, get_current_model_name
+from engine import generate_image, load_model, get_available_models, get_current_model_name, get_available_loras
 import storage
 
 # Ensure the output directory exists
@@ -44,6 +44,13 @@ async def list_models():
     Returns a list of available models.
     """
     return {"models": get_available_models()}
+
+@app.get("/api/loras")
+async def list_loras():
+    """
+    Returns a list of available LoRAs.
+    """
+    return {"loras": get_available_loras()}
 
 @app.post("/api/models/switch")
 async def switch_model(request: SwitchModelRequest):
@@ -85,10 +92,20 @@ async def generate_image_api(
     negative_prompt: Optional[str] = Form(None),
     guidance_scale: float = Form(7.5),
     num_inference_steps: int = Form(30),
+    lora: Optional[str] = Form(None),
     init_image: Optional[UploadFile] = File(None)
 ):
     init_image_bytes = await init_image.read() if init_image else None
-    image = generate_image(prompt, width, height, init_image_bytes, negative_prompt, guidance_scale, num_inference_steps)
+    image = generate_image(
+        prompt=prompt,
+        width=width,
+        height=height,
+        init_image_bytes=init_image_bytes,
+        negative_prompt=negative_prompt,
+        guidance_scale=guidance_scale,
+        num_inference_steps=num_inference_steps,
+        lora_name=lora
+    )
     
     # Generate UUID and Filename
     image_id = str(uuid.uuid4())
@@ -111,6 +128,7 @@ async def generate_image_api(
             "guidance_scale": guidance_scale,
             "num_inference_steps": num_inference_steps,
             "model": get_current_model_name(),
+            "lora": lora,
             "seed": 0 # Placeholder
         }
     }
@@ -138,6 +156,7 @@ async def websocket_endpoint(websocket: WebSocket):
         guidance_scale = float(data.get("guidance_scale", 7.5))
         num_inference_steps = int(data.get("num_inference_steps", 30))
         init_image_b64 = data.get("init_image")
+        lora = data.get("lora")
         
         init_image_bytes = None
         if init_image_b64:
@@ -165,7 +184,9 @@ async def websocket_endpoint(websocket: WebSocket):
         # Run generation in a separate thread to avoid blocking the websocket loop
         try:
             image = await loop.run_in_executor(None, lambda: generate_image(
-                prompt, width, height, init_image_bytes, negative_prompt, guidance_scale, num_inference_steps, callback=progress_callback
+                prompt=prompt, width=width, height=height, init_image_bytes=init_image_bytes, 
+                negative_prompt=negative_prompt, guidance_scale=guidance_scale, 
+                num_inference_steps=num_inference_steps, lora_name=lora, callback=progress_callback
             ))
         except asyncio.CancelledError:
             print("Generation task cancelled.")
@@ -186,7 +207,7 @@ async def websocket_endpoint(websocket: WebSocket):
             "settings": {
                 "width": width, "height": height, "negative_prompt": negative_prompt,
                 "guidance_scale": guidance_scale, "num_inference_steps": num_inference_steps,
-                "model": get_current_model_name(), "seed": 0
+                "model": get_current_model_name(), "lora": lora, "seed": 0
             }
         }
         storage.add_history_item(metadata)

@@ -10,17 +10,34 @@ import gc
 current_pipeline = None
 current_model_name = "Default"
 MODELS_DIR = "models"
+LORA_DIR = "loras"
 
 def get_available_models():
     """
-    Scans the models directory and returns a list of available models.
+    Scans the models directory and returns a list of available models,
+    filtering out files smaller than 1GB which are likely LoRAs.
     """
     models = ["Default"]
     if os.path.exists(MODELS_DIR):
         for file in os.listdir(MODELS_DIR):
-            if file.endswith(".safetensors") or file.endswith(".ckpt"):
+            file_path = os.path.join(MODELS_DIR, file)
+            if (file.endswith(".safetensors") or file.endswith(".ckpt")) and os.path.getsize(file_path) >= 1_000_000_000: # 1GB
                 models.append(file)
     return models
+
+def get_available_loras():
+    """
+    Scans the loras directory and returns a list of available LoRAs,
+    including a "None" option.
+    """
+    loras = ["None"]
+    if os.path.exists(LORA_DIR):
+        for file in os.listdir(LORA_DIR):
+            if file.endswith(".safetensors") or file.endswith(".ckpt"):
+                loras.append(file)
+    return loras
+
+current_lora_name = None
 
 def get_current_model_name():
     return current_model_name
@@ -70,18 +87,37 @@ def generate_image(
     negative_prompt: Optional[str] = None,
     guidance_scale: float = 7.5,
     num_inference_steps: int = 30,
+    lora_name: Optional[str] = None, # New parameter
     callback = None
 ):
     """
-    Generates an image from a text prompt, optionally using an initial image.
+    Generates an image from a text prompt, optionally using an initial image and applying a LoRA.
     """
     # Set default dimensions if not provided
     width = width or 512
     height = height or 512
 
-    global current_pipeline
+    global current_pipeline, current_lora_name
     if current_pipeline is None:
         load_model("Default")
+
+    # LoRA handling
+    if lora_name != current_lora_name:
+        if current_lora_name is not None and current_lora_name != "None":
+            print(f"--- Unloading LoRA: {current_lora_name}")
+            # Ensure the pipeline method for unloading LoRA exists before calling
+            if hasattr(current_pipeline, 'unload_lora_weights'):
+                current_pipeline.unload_lora_weights()
+            else:
+                print("Warning: unload_lora_weights not found on pipeline. May not be able to unload LoRA explicitly.")
+            
+        if lora_name is not None and lora_name != "None":
+            lora_path = os.path.join(LORA_DIR, lora_name)
+            print(f"--- Loading LoRA: {lora_name} from {lora_path}")
+            current_pipeline.load_lora_weights(lora_path)
+            current_lora_name = lora_name
+        else:
+            current_lora_name = None # No LoRA selected or "None" selected
 
     if init_image_bytes:
         # Image-to-Image generation

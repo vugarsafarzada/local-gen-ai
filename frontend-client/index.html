@@ -119,6 +119,38 @@
               <option value="Default">Default (v1-5)</option>
             </select>
           </div>
+          <!-- LoRA Selector -->
+          <div
+            style="
+              padding: 0 10px 15px 10px;
+              border-bottom: 1px solid #333;
+              margin-bottom: 10px;
+            "
+          >
+            <label
+              for="lora-selector"
+              style="
+                display: block;
+                margin-bottom: 5px;
+                font-size: 14px;
+                color: #ccc;
+              "
+              >LoRA:</label
+            >
+            <select
+              id="lora-selector"
+              style="
+                width: 100%;
+                padding: 8px;
+                background: #222;
+                color: white;
+                border: 1px solid #444;
+                border-radius: 4px;
+              "
+            >
+              <option value="None">None</option>
+            </select>
+          </div>
           <textarea
             id="prompt-input"
             placeholder="Enter your prompt here..."

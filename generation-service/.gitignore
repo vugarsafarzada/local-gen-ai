@@ -1,2 +1,3 @@
 *.safetensors
 *.ckpt
+loras/*.safetensors

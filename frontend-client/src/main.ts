@@ -19,6 +19,7 @@ const progressContainer = document.querySelector<HTMLDivElement>('#progress-cont
 const progressBar = document.querySelector<HTMLDivElement>('#progress-bar');
 const progressText = document.querySelector<HTMLDivElement>('#progress-text');
 const modelSelector = document.querySelector<HTMLSelectElement>('#model-selector');
+const loraSelector = document.querySelector<HTMLSelectElement>('#lora-selector');
 const loadingOverlay = document.querySelector<HTMLDivElement>('#loading-overlay');
 
 // Assuming the backend is running on http://localhost:8000
@@ -38,7 +39,6 @@ const fetchAndRenderHistory = async () => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        console.log('Received history data:', data); // Added for debugging
 
         historyList.innerHTML = ''; // Clear existing history
 
@@ -50,6 +50,8 @@ const fetchAndRenderHistory = async () => {
             let filename = '';
             let prompt = '';
             let id = '';
+            let modelUsed = '';
+            let loraUsed = '';
 
             if (typeof item === 'string') {
                 // Handle old format
@@ -61,12 +63,20 @@ const fetchAndRenderHistory = async () => {
                 filename = item.filename;
                 prompt = item.prompt;
                 id = item.id;
+                modelUsed = item.settings.model || 'Default';
+                loraUsed = item.settings.lora || 'None';
             }
 
             const promptSpan = document.createElement('span');
             promptSpan.className = 'history-item-prompt';
             promptSpan.textContent = prompt;
             promptSpan.title = prompt; // Show full prompt on hover
+
+            const detailsSpan = document.createElement('span');
+            detailsSpan.className = 'history-item-details';
+            detailsSpan.textContent = `Model: ${modelUsed}, LoRA: ${loraUsed}`;
+            detailsSpan.title = `Model: ${modelUsed}, LoRA: ${loraUsed}`;
+
 
             const deleteButton = document.createElement('button');
             deleteButton.className = 'history-item-delete-button';
@@ -122,9 +132,11 @@ const fetchAndRenderHistory = async () => {
                     }
 
                     if (modelSelector && item.settings.model) {
-                        // Update UI only. Note: This does not trigger the backend model switch automatically
-                        // to avoid freezing the UI while browsing history.
                         modelSelector.value = item.settings.model;
+                    }
+                    // Restore LoRA selection
+                    if (loraSelector && item.settings.lora) {
+                        loraSelector.value = item.settings.lora;
                     }
                 }
             });
@@ -149,7 +161,7 @@ const updateClearButtonVisibility = () => {
     }
 };
 
-if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && generateNewButton && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector) {
+if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && generateNewButton && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector && loraSelector) {
     // Initial fetch and render history
     fetchAndRenderHistory();
 
@@ -178,10 +190,37 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         }
     };
 
+    // --- LoRA Manager Logic ---
+    const fetchLoras = async () => {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/loras`);
+            const data = await response.json();
+
+            if (loraSelector) {
+                loraSelector.innerHTML = '<option value="None">None</option>'; // Always have None option
+
+                data.loras.forEach((loraName: string) => {
+                    if (loraName !== "None") {
+                        const option = document.createElement('option');
+                        option.value = loraName;
+                        option.textContent = loraName;
+                        loraSelector.appendChild(option);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Failed to fetch LoRAs:', error);
+        }
+    };
+
+    fetchModels();
+    fetchLoras();
+
     modelSelector.addEventListener('change', async (e) => {
         const selectedModel = (e.target as HTMLSelectElement).value;
-
-        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
 
         try {
             const response = await fetch(`${BACKEND_URL}/api/models/switch`, {
@@ -191,16 +230,15 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
             });
 
             if (!response.ok) throw new Error('Failed to switch model');
-            console.log(`Switched to ${selectedModel}`);
         } catch (error) {
             console.error(error);
             alert('Error switching model. Check console.');
         } finally {
-            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
         }
     });
-
-    fetchModels();
 
     // Event listener for Clear Image Button
     clearImageButton.addEventListener('click', () => {
@@ -275,7 +313,8 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
             height: height,
             negative_prompt: negativePrompt,
             guidance_scale: guidanceScale,
-            num_inference_steps: inferenceSteps
+            num_inference_steps: inferenceSteps,
+            lora: loraSelector ? loraSelector.value : null
         };
 
         // Helper to read file as base64
@@ -310,7 +349,6 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         cancelButton.onclick = handleCancel;
 
         ws.onopen = () => {
-            console.log('WebSocket connected');
             ws.send(JSON.stringify(requestData));
         };
 
@@ -344,7 +382,6 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         };
 
         ws.onclose = () => {
-            console.log('WebSocket closed');
             cancelButton.style.display = 'none'; // Hide cancel button
             progressContainer.style.display = 'none'; // Ensure progress bar is hidden
             cancelButton.onclick = null; // Cleanup event listener
@@ -382,7 +419,6 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         if (event.key === 'Escape') {
             if (abortController) {
                 abortController.abort(); // Abort ongoing fetch request
-                console.log('Generation process interrupted by Escape key.');
                 imageDisplay.innerHTML = '<p>Image generation aborted.</p>'; // Update UI on abort
             }
         }
