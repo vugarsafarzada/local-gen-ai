@@ -25,6 +25,39 @@
         <div id="image-display">
           <p>Generated image will appear here.</p>
         </div>
+        <div
+          id="progress-container"
+          style="
+            display: none;
+            width: 100%;
+            margin-top: 10px;
+            background-color: #333;
+            border-radius: 4px;
+            overflow: hidden;
+          "
+        >
+          <div
+            id="progress-bar"
+            style="
+              width: 0%;
+              height: 20px;
+              background-color: #4caf50;
+              transition: width 0.1s ease;
+            "
+          ></div>
+          <div
+            id="progress-text"
+            style="
+              text-align: center;
+              color: #fff;
+              font-size: 12px;
+              margin-top: -18px;
+              position: relative;
+            "
+          >
+            0%
+          </div>
+        </div>
         <div class="controls-container">
           <!-- New container for aspect ratio and buttons -->
           <div class="aspect-ratio-inputs">

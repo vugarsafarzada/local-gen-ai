@@ -39,7 +39,8 @@ def generate_image(
     init_image_bytes: Optional[bytes] = None,
     negative_prompt: Optional[str] = None,
     guidance_scale: float = 7.5,
-    num_inference_steps: int = 30
+    num_inference_steps: int = 30,
+    callback = None
 ):
     """
     Generates an image from a text prompt, optionally using an initial image.
@@ -60,7 +61,9 @@ def generate_image(
             image=init_image, 
             negative_prompt=negative_prompt, 
             guidance_scale=guidance_scale, 
-            num_inference_steps=num_inference_steps
+            num_inference_steps=num_inference_steps,
+            callback=callback,
+            callback_steps=1
         ).images[0]
 
     else:
@@ -72,7 +75,9 @@ def generate_image(
             height=height, 
             negative_prompt=negative_prompt, 
             guidance_scale=guidance_scale, 
-            num_inference_steps=num_inference_steps
+            num_inference_steps=num_inference_steps,
+            callback=callback,
+            callback_steps=1
         ).images[0]
         
     return image

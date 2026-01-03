@@ -13,6 +13,9 @@ const guidanceScaleInput = document.querySelector<HTMLInputElement>('#guidance-s
 const guidanceScaleValue = document.querySelector<HTMLSpanElement>('#guidance-scale-value');
 const inferenceStepsInput = document.querySelector<HTMLInputElement>('#inference-steps');
 const inferenceStepsValue = document.querySelector<HTMLSpanElement>('#inference-steps-value');
+const progressContainer = document.querySelector<HTMLDivElement>('#progress-container');
+const progressBar = document.querySelector<HTMLDivElement>('#progress-bar');
+const progressText = document.querySelector<HTMLDivElement>('#progress-text');
 
 // Assuming the backend is running on http://localhost:8000
 const BACKEND_URL = '/api'; // Updated to use the Vite proxy
@@ -117,7 +120,7 @@ const updateClearButtonVisibility = () => {
     }
 };
 
-if (generateButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue) {
+if (generateButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText) {
     // Initial fetch and render history
     fetchAndRenderHistory();
 
@@ -183,60 +186,82 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
         downloadButton.style.display = 'none'; // Hide download button during generation
         lastImageData = null;
 
-        // Abort any previous ongoing request
-        if (abortController) {
-            abortController.abort();
-        }
-        abortController = new AbortController();
-        const signal = abortController.signal;
+        // Show progress bar
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressText.textContent = '0%';
 
-        try {
-            // Construct FormData
-            const formData = new FormData();
-            formData.append('prompt', prompt);
-            formData.append('width', String(width));
-            formData.append('height', String(height));
-            if (negativePrompt) {
-                formData.append('negative_prompt', negativePrompt);
-            }
-            formData.append('guidance_scale', String(guidanceScale));
-            formData.append('num_inference_steps', String(inferenceSteps));
-            if (initImage) {
-                formData.append('init_image', initImage);
-            }
+        // Prepare data for WebSocket
+        const requestData: any = {
+            prompt: prompt,
+            width: width,
+            height: height,
+            negative_prompt: negativePrompt,
+            guidance_scale: guidanceScale,
+            num_inference_steps: inferenceSteps
+        };
 
-            const response = await fetch(`${BACKEND_URL}/generate`, {
-                method: 'POST',
-                // No 'Content-Type' header; browser sets it with boundary for FormData
-                body: formData,
-                signal: signal, // Pass the signal to the fetch request
+        // Helper to read file as base64
+        const readFileAsBase64 = (file: File): Promise<string> => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
+        };
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        if (initImage) {
+            try {
+                requestData.init_image = await readFileAsBase64(initImage);
+            } catch (e) {
+                console.error("Error reading init image", e);
+                alert("Failed to read initial image.");
+                return;
             }
-
-            const data = await response.json();
-            if (data.image) {
-                lastImageData = `data:image/png;base64,${data.image}`;
-                imageDisplay.innerHTML = `<img src="${lastImageData}" alt="Generated Image" style="width:${width}px; height:${height}px;">`;
-                downloadButton.style.display = 'inline-block'; // Show download button
-                fetchAndRenderHistory(); // Refresh history
-            } else {
-                imageDisplay.innerHTML = '<p>Error: No image received from the backend.</p>';
-            }
-
-        } catch (error: any) { // Use 'any' for error type to safely access .name
-            if (error.name === 'AbortError') {
-                console.log('Image generation aborted.');
-                imageDisplay.innerHTML = '<p>Image generation aborted.</p>';
-            } else {
-                console.error('Error generating image:', error);
-                imageDisplay.innerHTML = `<p>Error generating image: ${error.message}</p>`;
-            }
-        } finally {
-            abortController = null; // Clear controller after request completes or is aborted
         }
+
+        // Initialize WebSocket
+        // Connect directly to backend port 8000 to bypass potential Vite proxy issues with WebSockets
+        const ws = new WebSocket(`ws://${window.location.hostname}:8000/ws/generate`);
+
+        ws.onopen = () => {
+            console.log('WebSocket connected');
+            ws.send(JSON.stringify(requestData));
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.status === 'progress') {
+                const percentage = data.percentage;
+                progressBar.style.width = `${percentage}%`;
+                progressText.textContent = `${percentage}% (Step ${data.step}/${data.total_steps})`;
+            } else if (data.status === 'completed') {
+                if (data.image) {
+                    lastImageData = `data:image/png;base64,${data.image}`;
+                    imageDisplay.innerHTML = `<img src="${lastImageData}" alt="Generated Image" style="width:${width}px; height:${height}px;">`;
+                    downloadButton.style.display = 'inline-block';
+                    fetchAndRenderHistory();
+                }
+                progressContainer.style.display = 'none';
+                ws.close();
+            } else if (data.status === 'error') {
+                imageDisplay.innerHTML = `<p>Error: ${data.message}</p>`;
+                progressContainer.style.display = 'none';
+                ws.close();
+            }
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            imageDisplay.innerHTML = '<p>WebSocket error occurred.</p>';
+            progressContainer.style.display = 'none';
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket closed');
+        };
     });
 
     // Event listener for Download Button
