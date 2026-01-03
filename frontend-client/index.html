@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalGen AI</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+    <div id="app">
+        <h1>LocalGen AI Image Generator</h1>
+        <div id="image-display">
+            <p>Generated image will appear here.</p>
+        </div>
+        <div class="controls-container"> <!-- New container for aspect ratio and buttons -->
+            <div class="aspect-ratio-inputs">
+                <input type="number" id="width-input" placeholder="Width (e.g., 512)" value="512" />
+                <input type="number" id="height-input" placeholder="Height (e.g., 512)" value="512" />
+            </div>
+            <div class="button-container">
+                <button id="generate-button" class="icon-button">➤</button>
+                <button id="download-button" style="display: none;">Download</button>
+            </div>
+        </div>
+        <textarea id="prompt-input" placeholder="Enter your prompt here..." rows="4"></textarea> <!-- Moved here -->
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

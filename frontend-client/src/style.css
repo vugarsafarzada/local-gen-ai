@@ -1,0 +1,128 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top */
+    min-height: 100vh;
+}
+
+#app {
+    padding: 20px;
+    max-width: 800px;
+    width: 100%;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px; /* Add some margin from the top */
+    display: flex; /* Make #app a flex container */
+    flex-direction: column; /* Stack children vertically */
+    gap: 20px; /* Add space between sections */
+}
+
+h1 {
+    text-align: center;
+    color: #00bcd4; /* A shade of cyan */
+    margin-bottom: 0; /* Remove default margin */
+}
+
+#image-display { /* Moved this up in HTML, so its margin is now handled by #app gap */
+    border: 1px solid #555;
+    border-radius: 4px;
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #3a3a3a;
+    color: #bbb;
+    text-align: center;
+    flex-grow: 1; /* Allow image display to take available space */
+}
+
+#image-display img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.controls-container { /* New container for aspect ratio and buttons */
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center; /* Align items vertically */
+    justify-content: flex-end; /* Push controls to the right */
+}
+
+.aspect-ratio-inputs {
+    display: flex;
+    gap: 10px;
+}
+
+.aspect-ratio-inputs input[type="number"] {
+    width: 100px; /* Fixed width for aspect ratio inputs */
+    padding: 10px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #3a3a3a;
+    color: #f0f0f0;
+    font-size: 16px;
+    text-align: center;
+}
+
+
+#prompt-input {
+    width: 100%; /* Make textarea take full width */
+    padding: 10px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #3a3a3a;
+    color: #f0f0f0;
+    font-size: 16px;
+    resize: vertical; /* Allow vertical resizing */
+    min-height: 80px; /* Increased minimum height for textarea */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    order: 4; /* Place it at the bottom within #app flex container */
+}
+
+#prompt-input::placeholder {
+    color: #bbb;
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+}
+
+#generate-button { /* Specific styles for the icon button */
+    padding: 10px 15px; /* Adjust padding for icon */
+    background-color: #00bcd4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 20px; /* Larger font for icon */
+    transition: background-color 0.3s ease;
+    line-height: 1; /* Adjust line height for icon */
+}
+
+#download-button {
+    padding: 10px 20px;
+    background-color: #4caf50; /* Green for download */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+#generate-button:hover {
+    background-color: #0097a7; /* Darker cyan */
+}
+
+#download-button:hover {
+    background-color: #45a049; /* Darker green */
+}
