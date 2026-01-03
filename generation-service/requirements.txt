@@ -4,3 +4,4 @@ diffusers
 torch
 transformers
 accelerate
+python-multipart

@@ -1,34 +1,65 @@
-from diffusers import DiffusionPipeline
+from diffusers import DiffusionPipeline, StableDiffusionImg2ImgPipeline
 import torch
 from typing import Optional
+from PIL import Image
+from io import BytesIO
 
-pipeline = None
+# We'll manage two separate pipelines now
+txt2img_pipeline = None
+img2img_pipeline = None
 
-def load_model():
+def load_txt2img_model():
     """
-    Loads the Stable Diffusion model.
+    Loads the Stable Diffusion Text-to-Image model.
     """
-    global pipeline
-    if pipeline is None:
-        # Using a smaller, faster model for initial setup. Can be replaced with SDXL-Turbo later.
+    global txt2img_pipeline
+    if txt2img_pipeline is None:
         model_id = "runwayml/stable-diffusion-v1-5"
-        pipeline = DiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
-        pipeline.to("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
-    return pipeline
+        txt2img_pipeline = DiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+        txt2img_pipeline.to("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
+    return txt2img_pipeline
 
-def generate_image(prompt: str, width: Optional[int] = None, height: Optional[int] = None):
+def load_img2img_model():
     """
-    Generates an image from a text prompt using the loaded Stable Diffusion model.
+    Loads the Stable Diffusion Image-to-Image model.
     """
-    if pipeline is None:
-        load_model()
-    
+    global img2img_pipeline
+    if img2img_pipeline is None:
+        model_id = "runwayml/stable-diffusion-v1-5" # Can use the same base model
+        img2img_pipeline = StableDiffusionImg2ImgPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+        img2img_pipeline.to("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
+    return img2img_pipeline
+
+# Keep a single load_model function for simplicity in main.py
+def load_model():
+    load_txt2img_model()
+    load_img2img_model()
+
+def generate_image(
+    prompt: str,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+    init_image_bytes: Optional[bytes] = None
+):
+    """
+    Generates an image from a text prompt, optionally using an initial image.
+    """
     # Set default dimensions if not provided
-    if width is None:
-        width = 512
-    if height is None:
-        height = 512
+    width = width or 512
+    height = height or 512
 
-    # Generate image with specified width and height
-    image = pipeline(prompt, width=width, height=height).images[0]
+    if init_image_bytes:
+        # Image-to-Image generation
+        pipeline = load_img2img_model()
+        init_image = Image.open(BytesIO(init_image_bytes)).convert("RGB")
+        init_image = init_image.resize((width, height))
+        
+        # Simple generation for now, can be expanded with more parameters later
+        image = pipeline(prompt=prompt, image=init_image).images[0]
+
+    else:
+        # Text-to-Image generation
+        pipeline = load_txt2img_model()
+        image = pipeline(prompt=prompt, width=width, height=height).images[0]
+        
     return image

@@ -1,6 +1,8 @@
 const promptInput = document.querySelector<HTMLTextAreaElement>('#prompt-input');
 const widthInput = document.querySelector<HTMLInputElement>('#width-input');
 const heightInput = document.querySelector<HTMLInputElement>('#height-input');
+const initImageInput = document.querySelector<HTMLInputElement>('#init-image'); // New file input
+const clearImageButton = document.querySelector<HTMLButtonElement>('#clear-image-button'); // New clear button
 const generateButton = document.querySelector<HTMLButtonElement>('#generate-button');
 const downloadButton = document.querySelector<HTMLButtonElement>('#download-button');
 const imageDisplay = document.querySelector<HTMLDivElement>('#image-display');
@@ -11,12 +13,36 @@ const BACKEND_URL = '/api'; // Updated to use the Vite proxy
 let lastImageData: string | null = null;
 let abortController: AbortController | null = null; // To manage ongoing fetch requests
 
-if (generateButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay) {
+// Function to update clear button visibility
+const updateClearButtonVisibility = () => {
+    if (clearImageButton) {
+        if (initImageInput && initImageInput.files && initImageInput.files.length > 0) {
+            clearImageButton.style.display = 'inline-block';
+        } else {
+            clearImageButton.style.display = 'none';
+        }
+    }
+};
+
+if (generateButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton) {
+    // Initial visibility check for clear button
+    updateClearButtonVisibility();
+
+    // Event listener for file input change to show/hide clear button
+    initImageInput.addEventListener('change', updateClearButtonVisibility);
+
+    // Event listener for Clear Image Button
+    clearImageButton.addEventListener('click', () => {
+        initImageInput.value = ''; // Clear the file input
+        updateClearButtonVisibility(); // Update button visibility
+    });
+
     // Event listener for Generate Button
     generateButton.addEventListener('click', async () => {
         const prompt = promptInput.value;
         const width = parseInt(widthInput.value, 10);
         const height = parseInt(heightInput.value, 10);
+        const initImage = initImageInput.files ? initImageInput.files[0] : null;
 
         if (!prompt) {
             alert('Please enter a prompt!');
@@ -39,12 +65,19 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
         const signal = abortController.signal;
 
         try {
+            // Construct FormData
+            const formData = new FormData();
+            formData.append('prompt', prompt);
+            formData.append('width', String(width));
+            formData.append('height', String(height));
+            if (initImage) {
+                formData.append('init_image', initImage);
+            }
+
             const response = await fetch(`${BACKEND_URL}/generate`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ prompt, width, height }), // Include width and height
+                // No 'Content-Type' header; browser sets it with boundary for FormData
+                body: formData,
                 signal: signal, // Pass the signal to the fetch request
             });
 
@@ -54,7 +87,7 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
 
             const data = await response.json();
             if (data.image) {
-                lastImageData = `data:image/png;base64,${data.image}`; // Corrected base66 to base64
+                lastImageData = `data:image/png;base64,${data.image}`;
                 imageDisplay.innerHTML = `<img src="${lastImageData}" alt="Generated Image" style="width:${width}px; height:${height}px;">`;
                 downloadButton.style.display = 'inline-block'; // Show download button
             } else {

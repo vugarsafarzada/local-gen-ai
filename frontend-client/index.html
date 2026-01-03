@@ -17,6 +17,11 @@
                 <input type="number" id="width-input" placeholder="Width (e.g., 512)" value="512" />
                 <input type="number" id="height-input" placeholder="Height (e.g., 512)" value="512" />
             </div>
+            <div class="file-input-container">
+                <label for="init-image">Initial Image (Optional)</label>
+                <input type="file" id="init-image" accept="image/*">
+                <button id="clear-image-button" style="display: none;">Clear</button> <!-- New Clear button -->
+            </div>
             <div class="button-container">
                 <button id="generate-button" class="icon-button">➤</button>
                 <button id="download-button" style="display: none;">Download</button>
