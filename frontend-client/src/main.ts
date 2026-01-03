@@ -42,15 +42,18 @@ const fetchAndRenderHistory = async () => {
 
             let filename = '';
             let prompt = '';
+            let id = '';
 
             if (typeof item === 'string') {
                 // Handle old format
                 filename = item;
                 prompt = item.replace('.png', '').replace(/_/g, ' ');
+                id = filename; // Fallback
             } else {
                 // Handle new format
                 filename = item.filename;
                 prompt = item.prompt;
+                id = item.id;
             }
 
             const promptSpan = document.createElement('span');
@@ -67,7 +70,7 @@ const fetchAndRenderHistory = async () => {
                 e.stopPropagation(); // Prevent the history item's click event from firing
                 if (confirm(`Are you sure you want to delete the image for prompt: "${prompt}"?`)) {
                     try {
-                        const deleteResponse = await fetch(`${BACKEND_URL}/api/history/item/${filename}`, { method: 'DELETE' }); // Corrected URL
+                        const deleteResponse = await fetch(`${BACKEND_URL}/api/history/item/${id}`, { method: 'DELETE' }); // Corrected URL
                         if (!deleteResponse.ok) {
                             throw new Error(`HTTP error! status: ${deleteResponse.status}`);
                         }
