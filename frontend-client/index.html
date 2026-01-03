@@ -87,69 +87,106 @@
           </div>
         </div>
         <div class="controls-container">
-          <!-- Model Selector -->
           <div
-            style="
-              padding: 0 10px 15px 10px;
-              border-bottom: 1px solid #333;
-              margin-bottom: 10px;
-            "
+            id="inital-setting"
+            style="display: flex; align-items: center; justify-content: center"
           >
-            <label
-              for="model-selector"
+            <!-- Model Selector -->
+            <div
               style="
-                display: block;
-                margin-bottom: 5px;
-                font-size: 14px;
-                color: #ccc;
-              "
-              >Model:</label
-            >
-            <select
-              id="model-selector"
-              style="
-                width: 100%;
-                padding: 8px;
-                background: #222;
-                color: white;
-                border: 1px solid #444;
-                border-radius: 4px;
+                padding: 0 10px 15px 10px;
+                border-bottom: 1px solid #333;
+                margin-bottom: 10px;
               "
             >
-              <option value="Default">Default (v1-5)</option>
-            </select>
-          </div>
-          <!-- LoRA Selector -->
-          <div
-            style="
-              padding: 0 10px 15px 10px;
-              border-bottom: 1px solid #333;
-              margin-bottom: 10px;
-            "
-          >
-            <label
-              for="lora-selector"
+              <label
+                for="model-selector"
+                style="
+                  display: block;
+                  margin-bottom: 5px;
+                  font-size: 14px;
+                  color: #ccc;
+                "
+                >Model:</label
+              >
+              <select
+                id="model-selector"
+                style="
+                  width: 100%;
+                  padding: 8px;
+                  background: #222;
+                  color: white;
+                  border: 1px solid #444;
+                  border-radius: 4px;
+                "
+              >
+                <option value="Default">Default (v1-5)</option>
+              </select>
+            </div>
+            <!-- LoRA Selector -->
+            <div
               style="
-                display: block;
-                margin-bottom: 5px;
-                font-size: 14px;
-                color: #ccc;
+                padding: 0 10px 15px 10px;
+                border-bottom: 1px solid #333;
+                margin-bottom: 10px;
               "
-              >LoRA:</label
             >
-            <select
-              id="lora-selector"
+              <label
+                for="lora-selector"
+                style="
+                  display: block;
+                  margin-bottom: 5px;
+                  font-size: 14px;
+                  color: #ccc;
+                "
+                >LoRA:</label
+              >
+              <select
+                id="lora-selector"
+                style="
+                  width: 100%;
+                  padding: 8px;
+                  background: #222;
+                  color: white;
+                  border: 1px solid #444;
+                  border-radius: 4px;
+                "
+              >
+                <option value="None">None</option>
+              </select>
+            </div>
+            <!-- Scheduler Selector -->
+            <div
               style="
-                width: 100%;
-                padding: 8px;
-                background: #222;
-                color: white;
-                border: 1px solid #444;
-                border-radius: 4px;
+                padding: 0 10px 15px 10px;
+                border-bottom: 1px solid #333;
+                margin-bottom: 10px;
               "
             >
-              <option value="None">None</option>
-            </select>
+              <label
+                for="scheduler-selector"
+                style="font-size: 14px; margin-bottom: 5px"
+                >Scheduler:</label
+              >
+              <select
+                id="scheduler-selector"
+                style="
+                  width: 100%;
+                  padding: 8px;
+                  background: #222;
+                  color: white;
+                  border: 1px solid #444;
+                  border-radius: 4px;
+                  box-sizing: border-box;
+                "
+              >
+                <option value="Euler a">Euler a</option>
+                <option value="Euler">Euler</option>
+                <option value="DPM++ 2M Karras">DPM++ 2M Karras</option>
+                <option value="DDIM">DDIM</option>
+                <option value="UniPC">UniPC</option>
+              </select>
+            </div>
           </div>
           <textarea
             id="prompt-input"
@@ -171,7 +208,7 @@
             />
           </div>
           <div class="button-container">
-            <button id="generate-button" class="icon-button">➤</button>
+            <button id="generate-button" class="icon-button">Generate ➤</button>
             <button
               id="cancel-button"
               class="icon-button"

@@ -1,4 +1,4 @@
-from diffusers import AutoPipelineForText2Image, AutoPipelineForImage2Image, StableDiffusionPipeline, StableDiffusionXLPipeline
+from diffusers import AutoPipelineForText2Image, AutoPipelineForImage2Image, StableDiffusionPipeline, StableDiffusionXLPipeline, EulerDiscreteScheduler, EulerAncestralDiscreteScheduler, DPMSolverMultistepScheduler, DDIMScheduler, UniPCMultistepScheduler
 import torch
 from typing import Optional
 from PIL import Image
@@ -79,6 +79,29 @@ def load_model(model_name: str):
     print(f"--- Model {model_name} loaded successfully.")
     return current_pipeline
 
+def set_scheduler(pipeline, scheduler_id: str):
+    """
+    Sets the scheduler for the given pipeline based on the scheduler_id.
+    """
+    if scheduler_id == "Euler a":
+        pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(pipeline.scheduler.config)
+    elif scheduler_id == "Euler":
+        pipeline.scheduler = EulerDiscreteScheduler.from_config(pipeline.scheduler.config)
+    elif scheduler_id == "DPM++ 2M Karras":
+        # For DPM++ 2M Karras, specific config is often recommended
+        pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
+            pipeline.scheduler.config,
+            use_karras_sigmas=True,
+            algorithm_type="dpmsolver++"
+        )
+    elif scheduler_id == "DDIM":
+        pipeline.scheduler = DDIMScheduler.from_config(pipeline.scheduler.config)
+    elif scheduler_id == "UniPC":
+        pipeline.scheduler = UniPCMultistepScheduler.from_config(pipeline.scheduler.config)
+    else: # Default to Euler a
+        print(f"--- Warning: Unknown scheduler '{scheduler_id}'. Defaulting to Euler a.")
+        pipeline.scheduler = EulerAncestralDiscreteScheduler.from_config(pipeline.scheduler.config)
+
 def generate_image(
     prompt: str,
     width: Optional[int] = None,
@@ -87,7 +110,8 @@ def generate_image(
     negative_prompt: Optional[str] = None,
     guidance_scale: float = 7.5,
     num_inference_steps: int = 30,
-    lora_name: Optional[str] = None, # New parameter
+    lora_name: Optional[str] = None,
+    scheduler: str = "Euler a", # New parameter with default
     callback = None
 ):
     """
@@ -100,6 +124,9 @@ def generate_image(
     global current_pipeline, current_lora_name
     if current_pipeline is None:
         load_model("Default")
+
+    # Set the scheduler
+    set_scheduler(current_pipeline, scheduler)
 
     # LoRA handling
     if lora_name != current_lora_name:

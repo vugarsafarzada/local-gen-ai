@@ -93,6 +93,7 @@ async def generate_image_api(
     guidance_scale: float = Form(7.5),
     num_inference_steps: int = Form(30),
     lora: Optional[str] = Form(None),
+    scheduler: str = Form("Euler a"), # New parameter with default
     init_image: Optional[UploadFile] = File(None)
 ):
     init_image_bytes = await init_image.read() if init_image else None
@@ -104,7 +105,8 @@ async def generate_image_api(
         negative_prompt=negative_prompt,
         guidance_scale=guidance_scale,
         num_inference_steps=num_inference_steps,
-        lora_name=lora
+        lora_name=lora,
+        scheduler=scheduler
     )
     
     # Generate UUID and Filename
@@ -129,6 +131,7 @@ async def generate_image_api(
             "num_inference_steps": num_inference_steps,
             "model": get_current_model_name(),
             "lora": lora,
+            "scheduler": scheduler,
             "seed": 0 # Placeholder
         }
     }
@@ -157,6 +160,7 @@ async def websocket_endpoint(websocket: WebSocket):
         num_inference_steps = int(data.get("num_inference_steps", 30))
         init_image_b64 = data.get("init_image")
         lora = data.get("lora")
+        scheduler = data.get("scheduler", "Euler a") # New parameter with default
         
         init_image_bytes = None
         if init_image_b64:
@@ -186,7 +190,7 @@ async def websocket_endpoint(websocket: WebSocket):
             image = await loop.run_in_executor(None, lambda: generate_image(
                 prompt=prompt, width=width, height=height, init_image_bytes=init_image_bytes, 
                 negative_prompt=negative_prompt, guidance_scale=guidance_scale, 
-                num_inference_steps=num_inference_steps, lora_name=lora, callback=progress_callback
+                num_inference_steps=num_inference_steps, lora_name=lora, scheduler=scheduler, callback=progress_callback
             ))
         except asyncio.CancelledError:
             print("Generation task cancelled.")
@@ -207,7 +211,7 @@ async def websocket_endpoint(websocket: WebSocket):
             "settings": {
                 "width": width, "height": height, "negative_prompt": negative_prompt,
                 "guidance_scale": guidance_scale, "num_inference_steps": num_inference_steps,
-                "model": get_current_model_name(), "lora": lora, "seed": 0
+                "model": get_current_model_name(), "lora": lora, "scheduler": scheduler, "seed": 0
             }
         }
         storage.add_history_item(metadata)

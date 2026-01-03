@@ -20,6 +20,7 @@ const progressBar = document.querySelector<HTMLDivElement>('#progress-bar');
 const progressText = document.querySelector<HTMLDivElement>('#progress-text');
 const modelSelector = document.querySelector<HTMLSelectElement>('#model-selector');
 const loraSelector = document.querySelector<HTMLSelectElement>('#lora-selector');
+const schedulerSelector = document.querySelector<HTMLSelectElement>('#scheduler-selector');
 const loadingOverlay = document.querySelector<HTMLDivElement>('#loading-overlay');
 
 // Assuming the backend is running on http://localhost:8000
@@ -52,6 +53,7 @@ const fetchAndRenderHistory = async () => {
             let id = '';
             let modelUsed = '';
             let loraUsed = '';
+            let schedulerUsed = '';
 
             if (typeof item === 'string') {
                 // Handle old format
@@ -65,6 +67,7 @@ const fetchAndRenderHistory = async () => {
                 id = item.id;
                 modelUsed = item.settings.model || 'Default';
                 loraUsed = item.settings.lora || 'None';
+                schedulerUsed = item.settings.scheduler || 'Euler a';
             }
 
             const promptSpan = document.createElement('span');
@@ -74,8 +77,8 @@ const fetchAndRenderHistory = async () => {
 
             const detailsSpan = document.createElement('span');
             detailsSpan.className = 'history-item-details';
-            detailsSpan.textContent = `Model: ${modelUsed}, LoRA: ${loraUsed}`;
-            detailsSpan.title = `Model: ${modelUsed}, LoRA: ${loraUsed}`;
+            detailsSpan.textContent = `Model: ${modelUsed}, LoRA: ${loraUsed}, Scheduler: ${schedulerUsed}`;
+            detailsSpan.title = `Model: ${modelUsed}, LoRA: ${loraUsed}, Scheduler: ${schedulerUsed}`;
 
 
             const deleteButton = document.createElement('button');
@@ -138,6 +141,10 @@ const fetchAndRenderHistory = async () => {
                     if (loraSelector && item.settings.lora) {
                         loraSelector.value = item.settings.lora;
                     }
+                    // Restore Scheduler selection
+                    if (schedulerSelector && item.settings.scheduler) {
+                        schedulerSelector.value = item.settings.scheduler;
+                    }
                 }
             });
             historyList.appendChild(historyItem);
@@ -161,7 +168,7 @@ const updateClearButtonVisibility = () => {
     }
 };
 
-if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && generateNewButton && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector && loraSelector) {
+if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && generateNewButton && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector && loraSelector && schedulerSelector) {
     // Initial fetch and render history
     fetchAndRenderHistory();
 
@@ -218,7 +225,9 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
 
     modelSelector.addEventListener('change', async (e) => {
         const selectedModel = (e.target as HTMLSelectElement).value;
+        console.log(`Model selector changed to: ${selectedModel}`);
         if (loadingOverlay) {
+            console.log("Attempting to show loading overlay for model switch.");
             loadingOverlay.style.display = 'flex';
         }
 
@@ -230,11 +239,13 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
             });
 
             if (!response.ok) throw new Error('Failed to switch model');
+            console.log(`Switched to ${selectedModel}`);
         } catch (error) {
             console.error(error);
             alert('Error switching model. Check console.');
         } finally {
             if (loadingOverlay) {
+                console.log("Hiding loading overlay for model switch.");
                 loadingOverlay.style.display = 'none';
             }
         }
@@ -314,7 +325,8 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
             negative_prompt: negativePrompt,
             guidance_scale: guidanceScale,
             num_inference_steps: inferenceSteps,
-            lora: loraSelector ? loraSelector.value : null
+            lora: loraSelector ? loraSelector.value : null,
+            scheduler: schedulerSelector ? schedulerSelector.value : null
         };
 
         // Helper to read file as base64
@@ -349,6 +361,7 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         cancelButton.onclick = handleCancel;
 
         ws.onopen = () => {
+            console.log('WebSocket connected');
             ws.send(JSON.stringify(requestData));
         };
 
@@ -382,6 +395,7 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         };
 
         ws.onclose = () => {
+            console.log('WebSocket closed');
             cancelButton.style.display = 'none'; // Hide cancel button
             progressContainer.style.display = 'none'; // Ensure progress bar is hidden
             cancelButton.onclick = null; // Cleanup event listener
@@ -419,6 +433,7 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         if (event.key === 'Escape') {
             if (abortController) {
                 abortController.abort(); // Abort ongoing fetch request
+                console.log('Generation process interrupted by Escape key.');
                 imageDisplay.innerHTML = '<p>Image generation aborted.</p>'; // Update UI on abort
             }
         }
