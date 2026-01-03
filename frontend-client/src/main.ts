@@ -4,6 +4,7 @@ const heightInput = document.querySelector<HTMLInputElement>('#height-input');
 const initImageInput = document.querySelector<HTMLInputElement>('#init-image'); // New file input
 const clearImageButton = document.querySelector<HTMLButtonElement>('#clear-image-button'); // New clear button
 const deleteHistoryButton = document.querySelector<HTMLButtonElement>('#delete-history-button'); // New delete button
+const generateNewButton = document.querySelector<HTMLButtonElement>('#generete-new-button'); // New page
 const generateButton = document.querySelector<HTMLButtonElement>('#generate-button');
 const cancelButton = document.querySelector<HTMLButtonElement>('#cancel-button');
 const downloadButton = document.querySelector<HTMLButtonElement>('#download-button');
@@ -148,7 +149,7 @@ const updateClearButtonVisibility = () => {
     }
 };
 
-if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector) {
+if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && generateNewButton && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector) {
     // Initial fetch and render history
     fetchAndRenderHistory();
 
@@ -234,6 +235,10 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         }
     });
 
+    // Event listener for New Generate Button
+    generateNewButton.addEventListener('click', async () => {
+        window.location.reload();
+    });
     // Event listener for Generate Button
     generateButton.addEventListener('click', async () => {
         const prompt = promptInput.value;
