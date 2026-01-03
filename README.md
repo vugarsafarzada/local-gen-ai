@@ -1,24 +1,70 @@
 # LocalGen AI
 
-This project is a monorepo for LocalGen AI, a self-hosted image generator. It follows a microservices strategy, allowing for independent development and deployment of its components.
+LocalGen AI is a self-hosted, privacy-first AI image generation platform. It runs entirely locally on your hardware, ensuring no external API keys or cloud dependencies are required.
 
-## Project Structure
+## (+) Features
 
-- `generation-service/`: The backend service responsible for AI image generation.
-- `frontend-client/`: The web-based user interface for interacting with the generation service.
+*   **Text-to-Image:** Generate high-quality images from text prompts using Stable Diffusion v1.5.
+*   **Image-to-Image:** Use an initial image as a base for your generations.
+*   **Advanced Controls:** Fine-tune your results with:
+    *   Negative Prompts
+    *   Guidance Scale
+    *   Inference Steps
+    *   Custom Dimensions (Width/Height)
+*   **Real-time Feedback:** Live progress bar powered by WebSockets.
+*   **History Gallery:** Automatically saves generated images and metadata. View, download, or delete past creations.
+*   **Privacy Focused:** All processing happens on your machine.
 
-## Backend: Generation Service
+## (#) Technical Stack
 
-The `generation-service` is built with Python 3.10+ and FastAPI. It leverages `diffusers` (Hugging Face) and `torch` (PyTorch) for machine learning, specifically using Stable Diffusion v1.5 or SDXL Turbo models.
+### Backend (Generation Service)
+*   **Framework:** FastAPI (Python 3.10+)
+*   **ML Engine:** Hugging Face `diffusers`, PyTorch
+*   **Storage:** JSON-based metadata & local filesystem
 
-**Capabilities:**
-- Text-to-Image (txt2img)
-- Image-to-Image (img2img)
+### Frontend (Client)
+*   **Core:** HTML5, CSS3, TypeScript
+*   **Build Tool:** Vite
+*   **Communication:** WebSockets & Fetch API
 
-## Frontend: Client
+## [-] Project Structure
 
-The `frontend-client` is a lightweight web application built with Vanilla HTML5, CSS3, and TypeScript. Vite is used for bundling during development. It communicates with the backend using the Fetch API.
+This project follows a monorepo structure:
 
-## Future Enhancements
+```text
+/
+├── apps/
+│   ├── generation-service/    # Python/FastAPI Backend
+│   │   ├── main.py            # API & WebSocket Entry point
+│   │   ├── engine.py          # ML Inference Logic
+│   │   └── storage.py         # JSON History Management
+│   │
+│   └── frontend-client/       # TypeScript Frontend
+│       ├── src/               # UI Logic & Styles
+│       └── index.html         # Entry HTML
+```
 
-Future plans include the integration of a NestJS API Gateway for robust authentication and authorization.
+## [-] Quick Start
+
+### Prerequisites
+*   **Python:** 3.10 or higher
+*   **Node.js:** 18 or higher
+*   **Hardware:** NVIDIA GPU (CUDA) or Apple Silicon (MPS) recommended.
+
+### 1. Start the Backend
+```bash
+cd apps/generation-service
+pip install -r requirements.txt
+python main.py
+```
+
+### 2. Start the Frontend
+```bash
+cd apps/frontend-client
+npm install
+npm run dev
+```
+
+## [-] Future Enhancements
+
+*   Integration of a NestJS API Gateway for robust authentication and authorization.
