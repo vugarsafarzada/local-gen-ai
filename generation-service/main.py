@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 import uuid
 import asyncio
+import threading
 
 from engine import generate_image, load_txt2img_model, load_img2img_model
 import storage
@@ -110,6 +111,7 @@ async def generate_image_api(
 @app.websocket("/ws/generate")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+    stop_event = threading.Event()
     try:
         data = await websocket.receive_json()
         
@@ -136,15 +138,24 @@ async def websocket_endpoint(websocket: WebSocket):
         def progress_callback(step, timestep, latents):
             # Calculate percentage (step is 0-indexed)
             percentage = int(((step + 1) / num_inference_steps) * 100)
-            print(f"Generation Progress: {percentage}%")
+            
+            if stop_event.is_set():
+                raise RuntimeError("Generation cancelled")
+            
+            # print(f"Generation Progress: {percentage}%") # Optional: reduce log noise
             msg = {"status": "progress", "percentage": percentage, "step": step + 1, "total_steps": num_inference_steps}
             # Send message to websocket from the thread
             asyncio.run_coroutine_threadsafe(websocket.send_json(msg), loop)
 
         # Run generation in a separate thread to avoid blocking the websocket loop
-        image = await loop.run_in_executor(None, lambda: generate_image(
-            prompt, width, height, init_image_bytes, negative_prompt, guidance_scale, num_inference_steps, callback=progress_callback
-        ))
+        try:
+            image = await loop.run_in_executor(None, lambda: generate_image(
+                prompt, width, height, init_image_bytes, negative_prompt, guidance_scale, num_inference_steps, callback=progress_callback
+            ))
+        except asyncio.CancelledError:
+            print("Generation task cancelled.")
+            stop_event.set()
+            raise
 
         # Save and process result (similar to POST endpoint)
         image_id = str(uuid.uuid4())
@@ -173,6 +184,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         print("Client disconnected")
+        stop_event.set()
     except Exception as e:
         print(f"Error in websocket: {e}")
-        await websocket.send_json({"status": "error", "message": str(e)})
+        # Only try to send error if socket is likely open (not cancelled/disconnected)
+        if not stop_event.is_set():
+            await websocket.send_json({"status": "error", "message": str(e)})

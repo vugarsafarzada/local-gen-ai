@@ -5,6 +5,7 @@ const initImageInput = document.querySelector<HTMLInputElement>('#init-image'); 
 const clearImageButton = document.querySelector<HTMLButtonElement>('#clear-image-button'); // New clear button
 const deleteHistoryButton = document.querySelector<HTMLButtonElement>('#delete-history-button'); // New delete button
 const generateButton = document.querySelector<HTMLButtonElement>('#generate-button');
+const cancelButton = document.querySelector<HTMLButtonElement>('#cancel-button');
 const downloadButton = document.querySelector<HTMLButtonElement>('#download-button');
 const imageDisplay = document.querySelector<HTMLDivElement>('#image-display');
 const historyList = document.querySelector<HTMLDivElement>('#history-list'); // Changed from historyGrid to historyList
@@ -120,7 +121,7 @@ const updateClearButtonVisibility = () => {
     }
 };
 
-if (generateButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText) {
+if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText) {
     // Initial fetch and render history
     fetchAndRenderHistory();
 
@@ -184,6 +185,7 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
 
         imageDisplay.innerHTML = '<p>Generating image...</p>';
         downloadButton.style.display = 'none'; // Hide download button during generation
+        cancelButton.style.display = 'inline-block'; // Show cancel button
         lastImageData = null;
 
         // Show progress bar
@@ -225,6 +227,13 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
         // Connect directly to backend port 8000 to bypass potential Vite proxy issues with WebSockets
         const ws = new WebSocket(`ws://${window.location.hostname}:8000/ws/generate`);
 
+        // Handle Cancel Button Click
+        const handleCancel = () => {
+            ws.close();
+            imageDisplay.innerHTML = '<p>Generation cancelled.</p>';
+        };
+        cancelButton.onclick = handleCancel;
+
         ws.onopen = () => {
             console.log('WebSocket connected');
             ws.send(JSON.stringify(requestData));
@@ -261,6 +270,9 @@ if (generateButton && downloadButton && promptInput && widthInput && heightInput
 
         ws.onclose = () => {
             console.log('WebSocket closed');
+            cancelButton.style.display = 'none'; // Hide cancel button
+            progressContainer.style.display = 'none'; // Ensure progress bar is hidden
+            cancelButton.onclick = null; // Cleanup event listener
         };
     });
 
