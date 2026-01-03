@@ -30,11 +30,6 @@ def load_img2img_model():
         img2img_pipeline.to("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
     return img2img_pipeline
 
-# Keep a single load_model function for simplicity in main.py
-def load_model():
-    load_txt2img_model()
-    load_img2img_model()
-
 def generate_image(
     prompt: str,
     width: Optional[int] = None,

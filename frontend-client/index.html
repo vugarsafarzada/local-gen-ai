@@ -7,27 +7,36 @@
     <link rel="stylesheet" href="/src/style.css">
 </head>
 <body>
-    <div id="app">
-        <h1>LocalGen AI Image Generator</h1>
-        <div id="image-display">
-            <p>Generated image will appear here.</p>
+    <div id="app-container"> <!-- New main container for sidebar layout -->
+        <div id="history-sidebar">
+            <div class="history-header">
+                <h2>History</h2>
+                <button id="delete-history-button" title="Delete all history">🗑️</button> <!-- Delete all button -->
+            </div>
+            <div id="history-list"></div> <!-- Changed from history-grid to history-list -->
         </div>
-        <div class="controls-container"> <!-- New container for aspect ratio and buttons -->
-            <div class="aspect-ratio-inputs">
-                <input type="number" id="width-input" placeholder="Width (e.g., 512)" value="512" />
-                <input type="number" id="height-input" placeholder="Height (e.g., 512)" value="512" />
+        <div id="app">
+            <h1>LocalGen AI Image Generator</h1>
+            <div id="image-display">
+                <p>Generated image will appear here.</p>
             </div>
-            <div class="file-input-container">
-                <label for="init-image">Initial Image (Optional)</label>
-                <input type="file" id="init-image" accept="image/*">
-                <button id="clear-image-button" style="display: none;">Clear</button> <!-- New Clear button -->
+            <div class="controls-container"> <!-- New container for aspect ratio and buttons -->
+                <div class="aspect-ratio-inputs">
+                    <input type="number" id="width-input" placeholder="Width (e.g., 512)" value="512" />
+                    <input type="number" id="height-input" placeholder="Height (e.g., 512)" value="512" />
+                </div>
+                <div class="file-input-container">
+                    <label for="init-image">Initial Image (Optional)</label>
+                    <input type="file" id="init-image" accept="image/*">
+                    <button id="clear-image-button" style="display: none;">Clear</button> <!-- New Clear button -->
+                </div>
+                <div class="button-container">
+                    <button id="generate-button" class="icon-button">➤</button>
+                    <button id="download-button" class="icon-button" style="display: none;">⬇</button> <!-- Changed to download icon -->
+                </div>
             </div>
-            <div class="button-container">
-                <button id="generate-button" class="icon-button">➤</button>
-                <button id="download-button" style="display: none;">Download</button>
-            </div>
+            <textarea id="prompt-input" placeholder="Enter your prompt here..." rows="4"></textarea> <!-- Moved here -->
         </div>
-        <textarea id="prompt-input" placeholder="Enter your prompt here..." rows="4"></textarea> <!-- Moved here -->
     </div>
     <script type="module" src="/src/main.ts"></script>
 </body>
