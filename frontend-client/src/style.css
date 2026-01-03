@@ -13,8 +13,8 @@ body {
 }
 
 #history-sidebar {
-  width: 280px; /* Slightly wider */
-  padding: 20px;
+  width: 440px; /* Slightly wider */
+  padding: 30px;
   background-color: #1f1f1f;
   border-right: 1px solid #444; /* Darker border */
   height: 100vh;

@@ -37,38 +37,6 @@
         <div class="history-header">
           <h2>History</h2>
         </div>
-        <!-- Model Selector -->
-        <div
-          style="
-            padding: 0 10px 15px 10px;
-            border-bottom: 1px solid #333;
-            margin-bottom: 10px;
-          "
-        >
-          <label
-            for="model-selector"
-            style="
-              display: block;
-              margin-bottom: 5px;
-              font-size: 14px;
-              color: #ccc;
-            "
-            >Model:</label
-          >
-          <select
-            id="model-selector"
-            style="
-              width: 100%;
-              padding: 8px;
-              background: #222;
-              color: white;
-              border: 1px solid #444;
-              border-radius: 4px;
-            "
-          >
-            <option value="Default">Default (v1-5)</option>
-          </select>
-        </div>
         <div class="history-header" style="padding-top: 0">
           <button id="delete-history-button" title="Delete all history">
             Clear History
@@ -117,7 +85,43 @@
           </div>
         </div>
         <div class="controls-container">
-          <!-- New container for aspect ratio and buttons -->
+          <!-- Model Selector -->
+          <div
+            style="
+              padding: 0 10px 15px 10px;
+              border-bottom: 1px solid #333;
+              margin-bottom: 10px;
+            "
+          >
+            <label
+              for="model-selector"
+              style="
+                display: block;
+                margin-bottom: 5px;
+                font-size: 14px;
+                color: #ccc;
+              "
+              >Model:</label
+            >
+            <select
+              id="model-selector"
+              style="
+                width: 100%;
+                padding: 8px;
+                background: #222;
+                color: white;
+                border: 1px solid #444;
+                border-radius: 4px;
+              "
+            >
+              <option value="Default">Default (v1-5)</option>
+            </select>
+          </div>
+          <textarea
+            id="prompt-input"
+            placeholder="Enter your prompt here..."
+            rows="4"
+          ></textarea>
           <div class="aspect-ratio-inputs">
             <input
               type="number"
@@ -131,12 +135,6 @@
               placeholder="Height (e.g., 512)"
               value="512"
             />
-          </div>
-          <div class="file-input-container">
-            <label for="init-image">Initial Image (Optional)</label>
-            <input type="file" id="init-image" accept="image/*" />
-            <button id="clear-image-button" style="display: none">Clear</button>
-            <!-- New Clear button -->
           </div>
           <div class="button-container">
             <button id="generate-button" class="icon-button">➤</button>
@@ -154,8 +152,12 @@
             >
               ⬇
             </button>
-            <!-- Changed to download icon -->
           </div>
+        </div>
+        <div class="file-input-container">
+          <label for="init-image">Initial Image (Optional)</label>
+          <input type="file" id="init-image" accept="image/*" />
+          <button id="clear-image-button" style="display: none">Clear</button>
         </div>
         <details style="margin-bottom: 15px; color: #bbb; width: 100%">
           <summary
@@ -193,7 +195,9 @@
                   resize: vertical;
                   box-sizing: border-box;
                 "
-              ></textarea>
+              >
+bad proportions, low resolution, bad, ugly, bad hands, bad teeth, terrible, painting, 3d, render, comic, anime, manga, unrealistic, flat,  watermark, signature, worst quality, low quality</textarea
+              >
             </div>
             <!-- Guidance Scale -->
             <div style="display: flex; align-items: center; gap: 10px">
@@ -241,12 +245,6 @@
             </div>
           </div>
         </details>
-        <textarea
-          id="prompt-input"
-          placeholder="Enter your prompt here..."
-          rows="4"
-        ></textarea>
-        <!-- Moved here -->
       </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
