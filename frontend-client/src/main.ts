@@ -101,6 +101,31 @@ const fetchAndRenderHistory = async () => {
                 imageDisplay!.innerHTML = `<img src="${imageUrl}" alt="${prompt}">`;
                 lastImageData = imageUrl; // Set for download
                 downloadButton!.style.display = 'inline-block';
+
+                // Restore settings from history
+                if (promptInput) promptInput.value = prompt;
+
+                if (typeof item !== 'string' && item.settings) {
+                    if (widthInput) widthInput.value = item.settings.width;
+                    if (heightInput) heightInput.value = item.settings.height;
+                    if (negativePromptInput) negativePromptInput.value = item.settings.negative_prompt || '';
+
+                    if (guidanceScaleInput) {
+                        guidanceScaleInput.value = item.settings.guidance_scale;
+                        if (guidanceScaleValue) guidanceScaleValue.textContent = item.settings.guidance_scale;
+                    }
+
+                    if (inferenceStepsInput) {
+                        inferenceStepsInput.value = item.settings.num_inference_steps;
+                        if (inferenceStepsValue) inferenceStepsValue.textContent = item.settings.num_inference_steps;
+                    }
+
+                    if (modelSelector && item.settings.model) {
+                        // Update UI only. Note: This does not trigger the backend model switch automatically
+                        // to avoid freezing the UI while browsing history.
+                        modelSelector.value = item.settings.model;
+                    }
+                }
             });
             historyList.appendChild(historyItem);
         });

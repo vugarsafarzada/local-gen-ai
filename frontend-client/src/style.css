@@ -1,269 +1,270 @@
 body {
-    font-family: sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #1a1a1a;
-    color: #f0f0f0;
-    min-height: 100vh;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+  min-height: 100vh;
 }
 
 #app-container {
-    display: flex;
-    width: 100%;
+  display: flex;
+  width: 100%;
 }
 
 #history-sidebar {
-    width: 280px; /* Slightly wider */
-    padding: 20px;
-    background-color: #1f1f1f;
-    border-right: 1px solid #444; /* Darker border */
-    height: 100vh;
-    overflow-y: auto;
-    box-sizing: border-box;
+  width: 280px; /* Slightly wider */
+  padding: 20px;
+  background-color: #1f1f1f;
+  border-right: 1px solid #444; /* Darker border */
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 /* Modern Scrollbar for Webkit browsers */
 #history-sidebar::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 #history-sidebar::-webkit-scrollbar-track {
-    background: #1f1f1f;
+  background: #1f1f1f;
 }
 #history-sidebar::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 4px;
-    border: 2px solid #1f1f1f;
+  background-color: #555;
+  border-radius: 4px;
+  border: 2px solid #1f1f1f;
 }
 
 .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 #history-sidebar h2 {
-    color: #00bcd4;
-    margin: 0;
-    font-size: 24px;
+  color: #00bcd4;
+  margin: 0;
+  font-size: 24px;
 }
 
 #delete-history-button {
-    background: none;
-    border: none;
-    color: #888;
-    font-size: 24px;
-    cursor: pointer;
-    transition: color 0.2s ease;
+  background: none;
+  border: none;
+  color: #00bcd4;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
 #delete-history-button:hover {
-    color: #d32f2f; /* Red on hover */
+  color: #d32f2f; /* Red on hover */
 }
 
 #history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .history-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #3a3a3a;
-    border-radius: 6px;
-    cursor: pointer;
-    border-left: 4px solid transparent;
-    transition: all 0.2s ease;
-    font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #3a3a3a;
+  border-radius: 6px;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+  font-size: 14px;
 }
 
 .history-item-prompt {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
 }
 
 .history-item-delete-button {
-    background: none;
-    border: none;
-    color: #888;
-    font-size: 18px;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    padding: 0 5px;
-    margin-left: 10px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0 5px;
+  margin-left: 10px;
 }
 
 .history-item-delete-button:hover {
-    color: #d32f2f;
+  color: #d32f2f;
 }
 
 .history-item:hover {
-    background-color: #4a4a4a;
-    border-left-color: #777;
+  background-color: #4a4a4a;
+  border-left-color: #777;
 }
 
 .history-item.selected {
-    background-color: #4a4a4a;
-    border-left-color: #00bcd4;
-    font-weight: bold;
+  background-color: #4a4a4a;
+  border-left-color: #00bcd4;
+  font-weight: bold;
 }
 
-
 #app {
-    padding: 20px;
-    width: calc(100% - 280px); /* Adjust width to account for sidebar */
-    background-color: #2a2a2a;
-    display: flex; /* Make #app a flex container */
-    flex-direction: column; /* Stack children vertically */
-    gap: 20px; /* Add space between sections */
-    height: 100vh;
-    box-sizing: border-box;
+  padding: 20px;
+  width: calc(100% - 280px); /* Adjust width to account for sidebar */
+  background-color: #2a2a2a;
+  display: flex; /* Make #app a flex container */
+  flex-direction: column; /* Stack children vertically */
+  gap: 20px; /* Add space between sections */
+  height: 100vh;
+  box-sizing: border-box;
 }
 
 h1 {
-    text-align: center;
-    color: #00bcd4; /* A shade of cyan */
-    margin-bottom: 0; /* Remove default margin */
+  text-align: center;
+  color: #00bcd4; /* A shade of cyan */
+  margin-bottom: 0; /* Remove default margin */
 }
 
-#image-display { /* Moved this up in HTML, so its margin is now handled by #app gap */
-    border: 1px solid #555;
-    border-radius: 4px;
-    min-height: 200px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #3a3a3a;
-    color: #bbb;
-    text-align: center;
-    flex-grow: 1; /* Allow image display to take available space */
+#image-display {
+  /* Moved this up in HTML, so its margin is now handled by #app gap */
+  border: 1px solid #555;
+  border-radius: 4px;
+  min-height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #3a3a3a;
+  color: #bbb;
+  text-align: center;
+  flex-grow: 1; /* Allow image display to take available space */
 }
 
 #image-display img {
-    max-width: 100%;
-    max-height: 100%; /* Ensure image fits within the container */
-    height: auto;
-    border-radius: 4px;
+  max-width: 100%;
+  max-height: 100%; /* Ensure image fits within the container */
+  height: auto;
+  border-radius: 4px;
 }
 
-.controls-container { /* New container for aspect ratio and buttons */
-    display: flex;
-    gap: 20px; /* Increased gap */
-    flex-wrap: wrap;
-    align-items: center; /* Align items vertically */
-    justify-content: space-between; /* Space out children */
+.controls-container {
+  /* New container for aspect ratio and buttons */
+  display: flex;
+  gap: 20px; /* Increased gap */
+  flex-wrap: wrap;
+  align-items: center; /* Align items vertically */
+  justify-content: space-between; /* Space out children */
 }
 
 .file-input-container {
-    display: flex;
-    flex-direction: row; /* Arrange children in a row */
-    gap: 10px; /* Space between file input and clear button */
-    align-items: center; /* Align items vertically */
-    color: #bbb;
+  display: flex;
+  flex-direction: row; /* Arrange children in a row */
+  gap: 10px; /* Space between file input and clear button */
+  align-items: center; /* Align items vertically */
+  color: #bbb;
 }
 
 #init-image {
-    color: #f0f0f0;
+  color: #f0f0f0;
 }
 
 /* Style file input button */
 #init-image::file-selector-button {
-    padding: 8px 12px;
-    background-color: #555;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  padding: 8px 12px;
+  background-color: #555;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 #init-image::file-selector-button:hover {
-    background-color: #777;
+  background-color: #777;
 }
 
 #clear-image-button {
-    padding: 8px 12px;
-    background-color: #d32f2f; /* Red for clear */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
+  padding: 8px 12px;
+  background-color: #d32f2f; /* Red for clear */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
 }
 
 #clear-image-button:hover {
-    background-color: #b71c1c; /* Darker red */
+  background-color: #b71c1c; /* Darker red */
 }
 
 .aspect-ratio-inputs {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .aspect-ratio-inputs input[type="number"] {
-    width: 100px; /* Fixed width for aspect ratio inputs */
-    padding: 10px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    background-color: #3a3a3a;
-    color: #f0f0f0;
-    font-size: 16px;
-    text-align: center;
+  width: 100px; /* Fixed width for aspect ratio inputs */
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #3a3a3a;
+  color: #f0f0f0;
+  font-size: 16px;
+  text-align: center;
 }
 
-
 #prompt-input {
-    width: 100%; /* Make textarea take full width */
-    padding: 10px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    background-color: #3a3a3a;
-    color: #f0f0f0;
-    font-size: 16px;
-    resize: vertical; /* Allow vertical resizing */
-    min-height: 80px; /* Increased minimum height for textarea */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
-    order: 4; /* Place it at the bottom within #app flex container */
+  width: 100%; /* Make textarea take full width */
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #3a3a3a;
+  color: #f0f0f0;
+  font-size: 16px;
+  resize: vertical; /* Allow vertical resizing */
+  min-height: 80px; /* Increased minimum height for textarea */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  order: 4; /* Place it at the bottom within #app flex container */
 }
 
 #prompt-input::placeholder {
-    color: #bbb;
+  color: #bbb;
 }
 
 .button-container {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .icon-button {
-    padding: 10px 15px; /* Adjust padding for icon */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 20px; /* Larger font for icon */
-    transition: background-color 0.3s ease;
-    line-height: 1; /* Adjust line height for icon */
+  padding: 10px 15px; /* Adjust padding for icon */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px; /* Larger font for icon */
+  transition: background-color 0.3s ease;
+  line-height: 1; /* Adjust line height for icon */
 }
 
 #generate-button {
-    background-color: #00bcd4;
+  background-color: #00bcd4;
 }
 
 #download-button {
-    background-color: #4caf50; /* Green for download */
+  background-color: #4caf50; /* Green for download */
 }
 
 #generate-button:hover {
-    background-color: #0097a7; /* Darker cyan */
+  background-color: #0097a7; /* Darker cyan */
 }
 
 #download-button:hover {
-    background-color: #45a049; /* Darker green */
+  background-color: #45a049; /* Darker green */
 }
