@@ -4,7 +4,9 @@ LocalGen AI is a self-hosted, privacy-first AI image generation platform. It run
 
 ## (+) Features
 
-*   **Text-to-Image:** Generate high-quality images from text prompts using Stable Diffusion v1.5.
+*   **Text-to-Image:** Generate high-quality images from text prompts.
+*   **Custom Model Support:** Switch between different Stable Diffusion checkpoints (`.safetensors`, `.ckpt`) stored locally.
+*   **SDXL Ready:** Seamlessly supports both Stable Diffusion v1.5 and SDXL architectures.
 *   **Image-to-Image:** Use an initial image as a base for your generations.
 *   **Advanced Controls:** Fine-tune your results with:
     *   Negative Prompts
@@ -12,7 +14,7 @@ LocalGen AI is a self-hosted, privacy-first AI image generation platform. It run
     *   Inference Steps
     *   Custom Dimensions (Width/Height)
 *   **Real-time Feedback:** Live progress bar powered by WebSockets.
-*   **History Gallery:** Automatically saves generated images and metadata. View, download, or delete past creations.
+*   **History Gallery:** Automatically saves generated images and metadata (including model used). Click history items to restore settings.
 *   **Privacy Focused:** All processing happens on your machine.
 
 ## (#) Technical Stack
@@ -64,6 +66,13 @@ cd apps/frontend-client
 npm install
 npm run dev
 ```
+
+### 3. Adding Custom Models
+
+1.  Create a directory named `models` inside `apps/generation-service/` (if it doesn't exist).
+2.  Download Stable Diffusion checkpoints (e.g., from Civitai or Hugging Face).
+3.  Place `.safetensors` or `.ckpt` files into the `models/` directory.
+4.  Refresh the web interface; the new models will appear in the "Model" dropdown.
 
 ## [-] Future Enhancements
 
