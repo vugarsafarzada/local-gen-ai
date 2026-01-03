@@ -17,6 +17,8 @@ const inferenceStepsValue = document.querySelector<HTMLSpanElement>('#inference-
 const progressContainer = document.querySelector<HTMLDivElement>('#progress-container');
 const progressBar = document.querySelector<HTMLDivElement>('#progress-bar');
 const progressText = document.querySelector<HTMLDivElement>('#progress-text');
+const modelSelector = document.querySelector<HTMLSelectElement>('#model-selector');
+const loadingOverlay = document.querySelector<HTMLDivElement>('#loading-overlay');
 
 // Assuming the backend is running on http://localhost:8000
 const BACKEND_URL = '/api'; // Updated to use the Vite proxy
@@ -121,7 +123,7 @@ const updateClearButtonVisibility = () => {
     }
 };
 
-if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText) {
+if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector) {
     // Initial fetch and render history
     fetchAndRenderHistory();
 
@@ -130,6 +132,49 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
 
     // Event listener for file input change to show/hide clear button
     initImageInput.addEventListener('change', updateClearButtonVisibility);
+
+    // --- Model Manager Logic ---
+    const fetchModels = async () => {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/models`);
+            const data = await response.json();
+
+            modelSelector.innerHTML = '';
+
+            data.models.forEach((modelName: string) => {
+                const option = document.createElement('option');
+                option.value = modelName;
+                option.textContent = modelName;
+                modelSelector.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Failed to fetch models:', error);
+        }
+    };
+
+    modelSelector.addEventListener('change', async (e) => {
+        const selectedModel = (e.target as HTMLSelectElement).value;
+
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/models/switch`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model_name: selectedModel }),
+            });
+
+            if (!response.ok) throw new Error('Failed to switch model');
+            console.log(`Switched to ${selectedModel}`);
+        } catch (error) {
+            console.error(error);
+            alert('Error switching model. Check console.');
+        } finally {
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+        }
+    });
+
+    fetchModels();
 
     // Event listener for Clear Image Button
     clearImageButton.addEventListener('click', () => {

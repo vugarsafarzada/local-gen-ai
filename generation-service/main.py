@@ -8,8 +8,9 @@ import os
 import uuid
 import asyncio
 import threading
+from pydantic import BaseModel
 
-from engine import generate_image, load_txt2img_model, load_img2img_model
+from engine import generate_image, load_model, get_available_models, get_current_model_name
 import storage
 
 # Ensure the output directory exists
@@ -18,14 +19,16 @@ os.makedirs(OUTPUTS_DIR, exist_ok=True)
 
 app = FastAPI()
 
+class SwitchModelRequest(BaseModel):
+    model_name: str
+
 @app.on_event("startup")
 async def startup_event():
     """
     Load the models on startup.
     """
-    print("--- Application startup: Loading models...")
-    load_txt2img_model()
-    load_img2img_model()
+    print("--- Application startup: Loading default model...")
+    load_model("Default")
     print("--- Models loaded successfully.")
 
 # Mount the outputs directory to serve static files
@@ -34,6 +37,18 @@ app.mount(f"/{OUTPUTS_DIR}", StaticFiles(directory=OUTPUTS_DIR), name="outputs")
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
+@app.get("/api/models")
+async def list_models():
+    """
+    Returns a list of available models.
+    """
+    return {"models": get_available_models()}
+
+@app.post("/api/models/switch")
+async def switch_model(request: SwitchModelRequest):
+    load_model(request.model_name)
+    return {"status": "success", "model": request.model_name}
 
 @app.get("/api/history")
 async def get_history():
@@ -95,7 +110,7 @@ async def generate_image_api(
             "negative_prompt": negative_prompt,
             "guidance_scale": guidance_scale,
             "num_inference_steps": num_inference_steps,
-            "model": "stable-diffusion-v1-5",
+            "model": get_current_model_name(),
             "seed": 0 # Placeholder
         }
     }
@@ -171,7 +186,7 @@ async def websocket_endpoint(websocket: WebSocket):
             "settings": {
                 "width": width, "height": height, "negative_prompt": negative_prompt,
                 "guidance_scale": guidance_scale, "num_inference_steps": num_inference_steps,
-                "model": "stable-diffusion-v1-5", "seed": 0
+                "model": get_current_model_name(), "seed": 0
             }
         }
         storage.add_history_item(metadata)
