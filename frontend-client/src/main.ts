@@ -356,7 +356,15 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         if (lastImageData) {
             const a = document.createElement('a');
             a.href = lastImageData;
-            a.download = 'generated-image.png';
+
+            const safeFilename = promptInput.value
+                .replace(/[^a-z0-9\s-]/gi, '')
+                .trim()
+                .replace(/\s+/g, '-')
+                .substring(0, 60)
+                .toLowerCase() || 'generated-image';
+
+            a.download = `${safeFilename}.png`;
             a.click();
         }
     });
