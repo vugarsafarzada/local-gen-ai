@@ -224,8 +224,12 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
             const data = await response.json();
 
             modelSelector.innerHTML = '';
+            
+            const models = data.models as string[];
+            const otherModels = models.filter(m => m !== "Default").sort((a, b) => a.localeCompare(b));
+            const sortedModels = models.includes("Default") ? ["Default", ...otherModels] : otherModels;
 
-            data.models.forEach((modelName: string) => {
+            sortedModels.forEach((modelName: string) => {
                 const option = document.createElement('option');
                 option.value = modelName;
                 option.textContent = modelName;
@@ -243,15 +247,17 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
             const data = await response.json();
 
             if (loraSelector) {
-                loraSelector.innerHTML = '<option value="None">None</option>'; // Always have None option
+                loraSelector.innerHTML = '';
+                
+                const loras = data.loras as string[];
+                const otherLoras = loras.filter(l => l !== "None").sort((a, b) => a.localeCompare(b));
+                const sortedLoras = loras.includes("None") ? ["None", ...otherLoras] : otherLoras;
 
-                data.loras.forEach((loraName: string) => {
-                    if (loraName !== "None") {
-                        const option = document.createElement('option');
-                        option.value = loraName;
-                        option.textContent = loraName;
-                        loraSelector.appendChild(option);
-                    }
+                sortedLoras.forEach((loraName: string) => {
+                    const option = document.createElement('option');
+                    option.value = loraName;
+                    option.textContent = loraName;
+                    loraSelector.appendChild(option);
                 });
             }
         } catch (error) {
@@ -259,8 +265,17 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         }
     };
 
+    // --- Scheduler Sorting Logic ---
+    const sortSchedulers = () => {
+        const options = Array.from(schedulerSelector.options);
+        options.sort((a, b) => a.text.localeCompare(b.text));
+        schedulerSelector.innerHTML = '';
+        options.forEach(option => schedulerSelector.add(option));
+    };
+
     fetchModels();
     fetchLoras();
+    sortSchedulers();
 
     modelSelector.addEventListener('change', async (e) => {
         const selectedModel = (e.target as HTMLSelectElement).value;

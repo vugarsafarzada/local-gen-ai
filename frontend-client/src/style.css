@@ -63,11 +63,13 @@ body {
   background-color: var(--bg-body);
   color: var(--text-main);
   min-height: 100vh;
+  overflow: hidden;
 }
 
 #app-container {
   display: flex;
   width: 100%;
+  overflow: auto;
 }
 
 #history-sidebar {
@@ -185,7 +187,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  height: 100vh;
+  overflow: scroll;
+  max-height: 100%;
   box-sizing: border-box;
 }
 
@@ -199,13 +202,15 @@ h1 {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   min-height: 200px;
+  max-height: 670px;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: var(--bg-image-display);
   color: var(--text-secondary);
   text-align: center;
-  flex-grow: 1;
+  resize: vertical;
+  overflow: auto;
 }
 
 #image-display img {
