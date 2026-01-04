@@ -3,6 +3,7 @@ const widthInput = document.querySelector<HTMLInputElement>('#width-input');
 const heightInput = document.querySelector<HTMLInputElement>('#height-input');
 const initImageInput = document.querySelector<HTMLInputElement>('#init-image'); // New file input
 const clearImageButton = document.querySelector<HTMLButtonElement>('#clear-image-button'); // New clear button
+const useFaceSwapCheckbox = document.querySelector<HTMLInputElement>('#use-face-swap'); // New Face Swap Checkbox
 const deleteHistoryButton = document.querySelector<HTMLButtonElement>('#delete-history-button'); // New delete button
 const generateNewButton = document.querySelector<HTMLButtonElement>('#generete-new-button'); // New page
 const generateButton = document.querySelector<HTMLButtonElement>('#generate-button');
@@ -54,6 +55,7 @@ const fetchAndRenderHistory = async () => {
             let modelUsed = '';
             let loraUsed = '';
             let schedulerUsed = '';
+            let faceSwapUsed = false;
 
             if (typeof item === 'string') {
                 // Handle old format
@@ -68,6 +70,7 @@ const fetchAndRenderHistory = async () => {
                 modelUsed = item.settings.model || 'Default';
                 loraUsed = item.settings.lora || 'None';
                 schedulerUsed = item.settings.scheduler || 'Euler a';
+                faceSwapUsed = item.settings.use_face_swap || false;
             }
 
             const promptSpan = document.createElement('span');
@@ -77,8 +80,8 @@ const fetchAndRenderHistory = async () => {
 
             const detailsSpan = document.createElement('span');
             detailsSpan.className = 'history-item-details';
-            detailsSpan.textContent = `Model: ${modelUsed}, LoRA: ${loraUsed}, Scheduler: ${schedulerUsed}`;
-            detailsSpan.title = `Model: ${modelUsed}, LoRA: ${loraUsed}, Scheduler: ${schedulerUsed}`;
+            detailsSpan.textContent = `Model: ${modelUsed}, LoRA: ${loraUsed}, Scheduler: ${schedulerUsed}, Swap: ${faceSwapUsed ? 'Yes' : 'No'}`;
+            detailsSpan.title = `Model: ${modelUsed}, LoRA: ${loraUsed}, Scheduler: ${schedulerUsed}, Swap: ${faceSwapUsed ? 'Yes' : 'No'}`;
 
 
             const deleteButton = document.createElement('button');
@@ -145,6 +148,10 @@ const fetchAndRenderHistory = async () => {
                     if (schedulerSelector && item.settings.scheduler) {
                         schedulerSelector.value = item.settings.scheduler;
                     }
+                    // Restore Face Swap selection
+                    if (useFaceSwapCheckbox) {
+                        useFaceSwapCheckbox.checked = item.settings.use_face_swap || false;
+                    }
                 }
             });
             historyList.appendChild(historyItem);
@@ -168,7 +175,7 @@ const updateClearButtonVisibility = () => {
     }
 };
 
-if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && generateNewButton && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector && loraSelector && schedulerSelector) {
+if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && generateNewButton && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector && loraSelector && schedulerSelector && useFaceSwapCheckbox) {
     // Initial fetch and render history
     fetchAndRenderHistory();
 
@@ -297,6 +304,7 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
         const negativePrompt = negativePromptInput.value;
         const guidanceScale = parseFloat(guidanceScaleInput.value);
         const inferenceSteps = parseInt(inferenceStepsInput.value, 10);
+        const useFaceSwap = useFaceSwapCheckbox.checked;
 
         if (!prompt) {
             alert('Please enter a prompt!');
@@ -326,7 +334,8 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
             guidance_scale: guidanceScale,
             num_inference_steps: inferenceSteps,
             lora: loraSelector ? loraSelector.value : null,
-            scheduler: schedulerSelector ? schedulerSelector.value : null
+            scheduler: schedulerSelector ? schedulerSelector.value : null,
+            use_face_swap: useFaceSwap
         };
 
         // Helper to read file as base64

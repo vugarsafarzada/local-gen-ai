@@ -93,7 +93,8 @@ async def generate_image_api(
     guidance_scale: float = Form(7.5),
     num_inference_steps: int = Form(30),
     lora: Optional[str] = Form(None),
-    scheduler: str = Form("Euler a"), # New parameter with default
+    scheduler: str = Form("Euler a"), 
+    use_face_swap: bool = Form(False), # New parameter
     init_image: Optional[UploadFile] = File(None)
 ):
     init_image_bytes = await init_image.read() if init_image else None
@@ -106,7 +107,8 @@ async def generate_image_api(
         guidance_scale=guidance_scale,
         num_inference_steps=num_inference_steps,
         lora_name=lora,
-        scheduler=scheduler
+        scheduler=scheduler,
+        use_face_swap=use_face_swap # Pass to engine
     )
     
     # Generate UUID and Filename
@@ -132,6 +134,7 @@ async def generate_image_api(
             "model": get_current_model_name(),
             "lora": lora,
             "scheduler": scheduler,
+            "use_face_swap": use_face_swap,
             "seed": 0 # Placeholder
         }
     }
@@ -160,7 +163,8 @@ async def websocket_endpoint(websocket: WebSocket):
         num_inference_steps = int(data.get("num_inference_steps", 30))
         init_image_b64 = data.get("init_image")
         lora = data.get("lora")
-        scheduler = data.get("scheduler", "Euler a") # New parameter with default
+        scheduler = data.get("scheduler", "Euler a")
+        use_face_swap = data.get("use_face_swap", False) # New parameter
         
         init_image_bytes = None
         if init_image_b64:
@@ -190,7 +194,8 @@ async def websocket_endpoint(websocket: WebSocket):
             image = await loop.run_in_executor(None, lambda: generate_image(
                 prompt=prompt, width=width, height=height, init_image_bytes=init_image_bytes, 
                 negative_prompt=negative_prompt, guidance_scale=guidance_scale, 
-                num_inference_steps=num_inference_steps, lora_name=lora, scheduler=scheduler, callback=progress_callback
+                num_inference_steps=num_inference_steps, lora_name=lora, scheduler=scheduler, 
+                use_face_swap=use_face_swap, callback=progress_callback
             ))
         except asyncio.CancelledError:
             print("Generation task cancelled.")
@@ -211,7 +216,8 @@ async def websocket_endpoint(websocket: WebSocket):
             "settings": {
                 "width": width, "height": height, "negative_prompt": negative_prompt,
                 "guidance_scale": guidance_scale, "num_inference_steps": num_inference_steps,
-                "model": get_current_model_name(), "lora": lora, "scheduler": scheduler, "seed": 0
+                "model": get_current_model_name(), "lora": lora, "scheduler": scheduler, 
+                "use_face_swap": use_face_swap, "seed": 0
             }
         }
         storage.add_history_item(metadata)

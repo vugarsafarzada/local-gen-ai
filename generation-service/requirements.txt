@@ -7,3 +7,7 @@ accelerate
 python-multipart
 Pillow
 peft
+insightface
+onnxruntime
+opencv-python
+numpy

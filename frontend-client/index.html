@@ -229,6 +229,11 @@
           <label for="init-image">Initial Image (Optional)</label>
           <input type="file" id="init-image" accept="image/*" />
           <button id="clear-image-button" style="display: none">Clear</button>
+          
+          <div style="display: flex; align-items: center; margin-left: 10px; gap: 5px;">
+            <input type="checkbox" id="use-face-swap" name="use-face-swap" style="width: auto;">
+            <label for="use-face-swap" title="Use the uploaded image as a face source instead of composition reference" style="margin-bottom: 0; font-size: 14px; cursor: pointer;">Use as Face Reference (Swap)</label>
+          </div>
         </div>
         <details style="margin-bottom: 15px; color: #bbb; width: 100%">
           <summary

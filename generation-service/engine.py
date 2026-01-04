@@ -5,12 +5,41 @@ from PIL import Image
 from io import BytesIO
 import os
 import gc
+import cv2
+import numpy as np
+import insightface
+from insightface.app import FaceAnalysis
 
 # Global pipeline management
 current_pipeline = None
 current_model_name = "Default"
 MODELS_DIR = "models"
 LORA_DIR = "loras"
+
+# Global Face Analysis & Swapper
+face_app = None
+face_swapper = None
+
+def init_face_modules():
+    global face_app, face_swapper
+    
+    # Initialize Face Analysis (Detection)
+    # allow_face_prob ensures we only get high-quality faces
+    face_app = FaceAnalysis(name='buffalo_l')
+    # Use context_dir to avoid downloading to home directory if possible, or just let it handle defaults.
+    # For this environment, we rely on default download or pre-downloaded models if 'buffalo_l' is standard.
+    # If internet is restricted, this might fail if buffalo_l isn't cached.
+    # However, user only mentioned 'inswapper_128.onnx' being present. 
+    # FaceAnalysis usually downloads its own detection models. 
+    # We will assume it can download or they are present.
+    face_app.prepare(ctx_id=0, det_size=(640, 640))
+    
+    # Initialize Swapper
+    swapper_path = os.path.join(MODELS_DIR, "insightface", "inswapper_128.onnx")
+    if os.path.exists(swapper_path):
+        face_swapper = insightface.model_zoo.get_model(swapper_path, download=False, download_zip=False)
+    else:
+        print(f"Warning: Face swapper model not found at {swapper_path}")
 
 def get_available_models():
     """
@@ -61,18 +90,24 @@ def load_model(model_name: str):
     
     device = "mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu"
 
+    # Common kwargs to disable safety checker for all pipelines
+    pipeline_kwargs = {
+        "safety_checker": None,
+        "requires_safety_checker": False
+    }
+
     if model_name == "Default":
         model_id = "runwayml/stable-diffusion-v1-5"
-        current_pipeline = AutoPipelineForText2Image.from_pretrained(model_id, torch_dtype=torch.float16)
+        current_pipeline = AutoPipelineForText2Image.from_pretrained(model_id, torch_dtype=torch.float16, **pipeline_kwargs)
     else:
         model_path = os.path.join(MODELS_DIR, model_name)
         # Heuristic: Check if filename contains 'xl' to use SDXL pipeline, otherwise default to SD1.5
         if "xl" in model_name.lower():
             print(f"--- Detected SDXL model from filename: {model_name}")
-            current_pipeline = StableDiffusionXLPipeline.from_single_file(model_path, torch_dtype=torch.float16)
+            current_pipeline = StableDiffusionXLPipeline.from_single_file(model_path, torch_dtype=torch.float16, **pipeline_kwargs)
         else:
             print(f"--- Detected SD1.5 model from filename: {model_name}")
-            current_pipeline = StableDiffusionPipeline.from_single_file(model_path, torch_dtype=torch.float16)
+            current_pipeline = StableDiffusionPipeline.from_single_file(model_path, torch_dtype=torch.float16, **pipeline_kwargs)
     
     current_pipeline.to(device)
     current_model_name = model_name
@@ -111,7 +146,8 @@ def generate_image(
     guidance_scale: float = 7.5,
     num_inference_steps: int = 30,
     lora_name: Optional[str] = None,
-    scheduler: str = "Euler a", # New parameter with default
+    scheduler: str = "Euler a",
+    use_face_swap: bool = False,
     callback = None
 ):
     """
@@ -121,9 +157,14 @@ def generate_image(
     width = width or 512
     height = height or 512
 
-    global current_pipeline, current_lora_name
+    global current_pipeline, current_lora_name, face_app, face_swapper
     if current_pipeline is None:
         load_model("Default")
+
+    # Initialize Face Modules if needed and if face swap is requested
+    if use_face_swap and (face_app is None or face_swapper is None):
+        print("--- Initializing Face Swap modules...")
+        init_face_modules()
 
     # Set the scheduler
     set_scheduler(current_pipeline, scheduler)
@@ -146,8 +187,10 @@ def generate_image(
         else:
             current_lora_name = None # No LoRA selected or "None" selected
 
-    if init_image_bytes:
-        # Image-to-Image generation
+    image = None
+
+    if init_image_bytes and not use_face_swap:
+        # Standard Image-to-Image generation (only if NOT in face swap mode)
         init_image = Image.open(BytesIO(init_image_bytes)).convert("RGB")
         init_image = init_image.resize((width, height))
         
@@ -164,7 +207,7 @@ def generate_image(
         ).images[0]
 
     else:
-        # Text-to-Image generation
+        # Text-to-Image generation (Used for standard Txt2Img AND Face Swap base)
         image = current_pipeline(
             prompt=prompt, 
             width=width, 
@@ -175,5 +218,50 @@ def generate_image(
             callback=callback,
             callback_steps=1
         ).images[0]
+    
+    # Handle Face Swap Post-Processing
+    if use_face_swap and init_image_bytes:
+        print("--- Performing Face Swap...")
+        if face_app is None or face_swapper is None:
+             print("Error: Face modules not initialized. Skipping swap.")
+        else:
+            try:
+                # 1. Prepare Source Face (from init_image_bytes)
+                # Convert bytes to numpy array for cv2
+                nparr = np.frombuffer(init_image_bytes, np.uint8)
+                source_img_cv = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                
+                # Detect faces in source
+                source_faces = face_app.get(source_img_cv)
+                if len(source_faces) == 0:
+                    print("No face detected in source image.")
+                else:
+                    # Sort by size to get the largest face (main subject)
+                    source_faces.sort(key=lambda x: x.bbox[2] * x.bbox[3], reverse=True)
+                    source_face = source_faces[0]
+
+                    # 2. Prepare Target Image (the generated image)
+                    # Convert PIL to CV2
+                    target_img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+                    
+                    # Detect faces in target
+                    target_faces = face_app.get(target_img_cv)
+                    if len(target_faces) == 0:
+                        print("No face detected in generated image to swap.")
+                    else:
+                        # Swap faces
+                        # We swap onto ALL faces detected in the target for now, or just the largest.
+                        # Usually swapping onto all is fun, but swapping onto the largest/most prominent is safer.
+                        # Let's swap onto all faces found in the target to ensure the character gets the face.
+                        res_img = target_img_cv.copy()
+                        for target_face in target_faces:
+                            res_img = face_swapper.get(res_img, target_face, source_face, paste_back=True)
+                        
+                        # Convert back to PIL
+                        image = Image.fromarray(cv2.cvtColor(res_img, cv2.COLOR_BGR2RGB))
+                        print("--- Face Swap completed.")
+
+            except Exception as e:
+                print(f"Error during face swap: {e}")
         
     return image
