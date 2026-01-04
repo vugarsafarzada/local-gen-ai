@@ -1,6 +1,8 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
+  root: '.', // Ensure root is correct
   server: {
     proxy: {
       '/api': {
@@ -14,4 +16,13 @@ export default defineConfig({
       },
     },
   },
-})
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        about: resolve(__dirname, 'about/index.html'),
+        generator: resolve(__dirname, 'image-generator/index.html'),
+      },
+    },
+  },
+});

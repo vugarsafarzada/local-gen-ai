@@ -16,6 +16,8 @@ LocalGen AI is a self-hosted, privacy-first AI image generation platform. It run
     *   Inference Steps
     *   Custom Dimensions (Width/Height)
 *   **Real-time Feedback:** Live progress bar powered by WebSockets.
+*   **Deep Linking:** Shareable URLs for specific generated images (`?id=...`).
+*   **Multi-Page Layout:** Separate Landing, About, and Generator pages.
 *   **History Gallery:** Automatically saves generated images and metadata (including model used). Click history items to restore settings.
 *   **Privacy Focused:** All processing happens on your machine.
 
@@ -45,7 +47,9 @@ This project follows a monorepo structure:
 │   │
 │   └── frontend-client/       # TypeScript Frontend
 │       ├── src/               # UI Logic & Styles
-│       └── index.html         # Entry HTML
+│       ├── image-generator/   # App Entry
+│       ├── about/             # About Page
+│       └── index.html         # Landing Page
 ```
 
 ## [-] Quick Start

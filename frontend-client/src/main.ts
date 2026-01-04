@@ -5,7 +5,7 @@ const initImageInput = document.querySelector<HTMLInputElement>('#init-image'); 
 const clearImageButton = document.querySelector<HTMLButtonElement>('#clear-image-button'); // New clear button
 const useFaceSwapCheckbox = document.querySelector<HTMLInputElement>('#use-face-swap'); // New Face Swap Checkbox
 const deleteHistoryButton = document.querySelector<HTMLButtonElement>('#delete-history-button'); // New delete button
-const generateNewButton = document.querySelector<HTMLButtonElement>('#generete-new-button'); // New page
+const generateNewButton = document.querySelector<HTMLButtonElement>('#generate-new-button'); // New page
 const generateButton = document.querySelector<HTMLButtonElement>('#generate-button');
 const cancelButton = document.querySelector<HTMLButtonElement>('#cancel-button');
 const downloadButton = document.querySelector<HTMLButtonElement>('#download-button');
@@ -31,6 +31,34 @@ const OUTPUTS_URL = '/outputs'; // Base URL for saved images
 let lastImageData: string | null = null;
 let abortController: AbortController | null = null; // To manage ongoing fetch requests
 
+// Function to update URL with image ID
+const updateUrl = (id: string) => {
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + id;
+    window.history.pushState({path: newUrl}, '', newUrl);
+};
+
+// Function to check URL for ID and load that image
+const checkUrlAndLoad = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    if (id && historyList) {
+        // Wait for a brief moment to ensure DOM is populated if necessary, 
+        // though fetchAndRenderHistory should be awaited if possible.
+        // Since we call this AFTER fetchAndRenderHistory, the DOM elements should be there.
+        
+        // Find the history item with the matching ID (we need to store IDs on elements or search differently)
+        // Since we didn't store IDs on the DOM elements explicitly in the previous code, 
+        // we might need to modify how we create elements or iterate to find the match.
+        // Let's modify fetchAndRenderHistory to add data-id to elements.
+        
+        const itemToClick = historyList.querySelector(`div[data-id="${id}"]`) as HTMLDivElement;
+        if (itemToClick) {
+            itemToClick.click();
+        }
+    }
+};
+
 // Function to fetch and render history
 const fetchAndRenderHistory = async () => {
     if (!historyList) return;
@@ -48,7 +76,6 @@ const fetchAndRenderHistory = async () => {
         data.history.forEach((item: any) => {
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
-
             let filename = '';
             let prompt = '';
             let id = '';
@@ -72,6 +99,8 @@ const fetchAndRenderHistory = async () => {
                 schedulerUsed = item.settings.scheduler || 'Euler a';
                 faceSwapUsed = item.settings.use_face_swap || false;
             }
+
+            historyItem.dataset.id = id; // Store ID for deep linking
 
             const promptSpan = document.createElement('span');
             promptSpan.className = 'history-item-prompt';
@@ -109,6 +138,7 @@ const fetchAndRenderHistory = async () => {
             historyItem.appendChild(deleteButton);
 
             historyItem.addEventListener('click', () => {
+                updateUrl(id); // Update URL when clicked
                 // Remove .selected from all other items
                 document.querySelectorAll('.history-item').forEach(i => i.classList.remove('selected'));
                 // Add .selected to the clicked item
@@ -177,7 +207,9 @@ const updateClearButtonVisibility = () => {
 
 if (generateButton && cancelButton && downloadButton && promptInput && widthInput && heightInput && imageDisplay && initImageInput && clearImageButton && historyList && generateNewButton && deleteHistoryButton && negativePromptInput && guidanceScaleInput && guidanceScaleValue && inferenceStepsInput && inferenceStepsValue && progressContainer && progressBar && progressText && modelSelector && loraSelector && schedulerSelector && useFaceSwapCheckbox) {
     // Initial fetch and render history
-    fetchAndRenderHistory();
+    fetchAndRenderHistory().then(() => {
+        checkUrlAndLoad();
+    });
 
     // Initial visibility check for clear button
     updateClearButtonVisibility();
@@ -293,7 +325,7 @@ if (generateButton && cancelButton && downloadButton && promptInput && widthInpu
 
     // Event listener for New Generate Button
     generateNewButton.addEventListener('click', async () => {
-        window.location.reload();
+        window.location.href = window.location.pathname;
     });
     // Event listener for Generate Button
     generateButton.addEventListener('click', async () => {
