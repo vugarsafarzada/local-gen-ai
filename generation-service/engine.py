@@ -101,84 +101,13 @@ def load_model(model_name: str):
         current_pipeline = AutoPipelineForText2Image.from_pretrained(model_id, torch_dtype=torch.float16, **pipeline_kwargs)
     else:
         model_path = os.path.join(MODELS_DIR, model_name)
-        print(f"--- Loading model: {model_name}")
-
-        # 1. FLUX Check (Specific filename check)
-        if "flux" in model_name.lower():
-            print("--- Detected Strategy: FLUX")
-            try:
-                current_pipeline = FluxPipeline.from_single_file(
-                    model_path, 
-                    torch_dtype=torch.bfloat16, 
-                    use_safetensors=True, 
-                    local_files_only=True
-                )
-                current_pipeline.enable_model_cpu_offload()
-                current_pipeline.to(device)
-                current_model_name = model_name
-                print(f"--- Model {model_name} loaded successfully (Flux).")
-                return current_pipeline
-            except Exception as e:
-                print(f"Flux load failed: {e}")
-                raise e
-
-        # 2. SDXL Strategy (Generic #1 - Priority)
-        print("--- Strategy 1: Attempting load as SDXL...")
-        # Smart Heuristic: Check for 'xl' OR 'pony' to prefer SDXL pipeline
-        if any(x in model_name.lower() for x in ['xl', 'pony']):
-             print(f"--- Heuristic: '{model_name}' detected as likely SDXL/Pony.")
-
-        try:
-            current_pipeline = StableDiffusionXLPipeline.from_single_file(
-                model_path, 
-                torch_dtype=torch.float16, 
-                use_safetensors=True,
-                **pipeline_kwargs
-            )
-            print("--- Success: Loaded as SDXL.")
-        except Exception as e_xl:
-            print(f"--- SDXL load failed. Switching to Strategy 2 (SD3). Error: {str(e_xl)[:100]}...")
-            
-            # 3. SD3 Strategy (Fallback for newer models like Qwen/T5 based)
-            print("--- Strategy 2: Attempting load as SD3...")
-            try:
-                current_pipeline = StableDiffusion3Pipeline.from_single_file(
-                    model_path,
-                    torch_dtype=torch.float16,
-                    use_safetensors=True,
-                    **pipeline_kwargs
-                )
-                print("--- Success: Loaded as SD3.")
-            except Exception as e_sd3:
-                print(f"--- SD3 load failed. Switching to Strategy 3 (Flux - Generic). Error: {str(e_sd3)[:100]}...")
-
-                # 4. Flux Strategy (Generic Fallback)
-                print("--- Strategy 3: Attempting load as Flux (Generic)...")
-                try:
-                    current_pipeline = FluxPipeline.from_single_file(
-                        model_path,
-                        torch_dtype=torch.bfloat16,
-                        use_safetensors=True,
-                        local_files_only=True
-                    )
-                    current_pipeline.enable_model_cpu_offload()
-                    print("--- Success: Loaded as Flux (Generic).")
-                except Exception as e_flux:
-                    print(f"--- Flux load failed. Switching to Strategy 4 (SD1.5). Error: {str(e_flux)[:100]}...")
-
-                    # 5. SD1.5 Strategy (Final Fallback)
-                    print("--- Strategy 4: Attempting load as SD1.5 (Standard)...")
-                    try:
-                        current_pipeline = StableDiffusionPipeline.from_single_file(
-                            model_path, 
-                            torch_dtype=torch.float16, 
-                            use_safetensors=True,
-                            **pipeline_kwargs
-                        )
-                        print("--- Success: Loaded as SD1.5.")
-                    except Exception as e_sd:
-                        # If all fail, raise a clear error
-                        raise ValueError(f"Model architecture not recognized.\nSDXL: {e_xl}\nSD3: {e_sd3}\nFlux: {e_flux}\nSD1.5: {e_sd}\n\nHint: This model might be 'Text-Encoder-Free' or requires newer libraries.")
+        # Heuristic: Check if filename contains 'xl' to use SDXL pipeline, otherwise default to SD1.5
+        if "xl" in model_name.lower():
+            print(f"--- Detected SDXL model from filename: {model_name}")
+            current_pipeline = StableDiffusionXLPipeline.from_single_file(model_path, torch_dtype=torch.float16, **pipeline_kwargs)
+        else:
+            print(f"--- Detected SD1.5 model from filename: {model_name}")
+            current_pipeline = StableDiffusionPipeline.from_single_file(model_path, torch_dtype=torch.float16, **pipeline_kwargs)
     
     current_pipeline.to(device)
     current_model_name = model_name
@@ -228,14 +157,6 @@ def generate_image(
     width = width or 512
     height = height or 512
 
-    # Input Sanitization
-    if negative_prompt is None:
-        negative_prompt = ""
-    if lora_name is None or lora_name == "None":
-        lora_name = ""
-    if prompt is None:
-        prompt = ""
-
     global current_pipeline, current_lora_name, face_app, face_swapper
     if current_pipeline is None:
         load_model("Default")
@@ -268,15 +189,6 @@ def generate_image(
 
     image = None
 
-    # Adapter for new callback style (Diffusers v0.23+)
-    def progress_wrapper(pipe, step_index, timestep, callback_kwargs):
-        if callback:
-             # The old callback expected (step, timestep, latents)
-             # We try to get latents from kwargs, though often not needed for simple progress bars
-             latents = callback_kwargs.get("latents", None)
-             callback(step_index, timestep, latents)
-        return callback_kwargs
-
     if init_image_bytes and not use_face_swap:
         # Standard Image-to-Image generation (only if NOT in face swap mode)
         init_image = Image.open(BytesIO(init_image_bytes)).convert("RGB")
@@ -290,7 +202,8 @@ def generate_image(
             negative_prompt=negative_prompt, 
             guidance_scale=guidance_scale, 
             num_inference_steps=num_inference_steps,
-            callback_on_step_end=progress_wrapper,
+            callback=callback,
+            callback_steps=1
         ).images[0]
 
     else:
@@ -302,7 +215,8 @@ def generate_image(
             negative_prompt=negative_prompt, 
             guidance_scale=guidance_scale, 
             num_inference_steps=num_inference_steps,
-            callback_on_step_end=progress_wrapper,
+            callback=callback,
+            callback_steps=1
         ).images[0]
     
     # Handle Face Swap Post-Processing
