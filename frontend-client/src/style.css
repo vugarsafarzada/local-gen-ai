@@ -1,9 +1,67 @@
+:root {
+  /* Dark Theme (Default) */
+  --bg-body: #1a1a1a;
+  --bg-sidebar: #1f1f1f;
+  --bg-app: #2a2a2a;
+  --bg-element: #3a3a3a;
+  --bg-element-hover: #4a4a4a;
+  --bg-image-display: #3a3a3a;
+
+  --text-main: #f0f0f0;
+  --text-secondary: #bbb;
+  --text-accent: white;
+  --text-error: #d32f2f;
+
+  --border-color: #555;
+  --border-sidebar: #444;
+
+  --scroll-track: #1f1f1f;
+  --scroll-thumb: #555;
+
+  --btn-primary: #444;
+  --btn-primary-hover: #444;
+  --btn-secondary: #4caf50;
+  --btn-secondary-hover: #45a049;
+  --btn-file: #555;
+  --btn-file-hover: #777;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* Light Theme Overrides */
+    --bg-body: #ffffff;
+    --bg-sidebar: #f8f9fa;
+    --bg-app: #ffffff;
+    --bg-element: #f1f1f1;
+    --bg-element-hover: #e0e0e0;
+    --bg-image-display: #eeeeee;
+
+    --text-main: #212529;
+    --text-secondary: #555;
+    --text-accent: black; /* Darker cyan for contrast */
+    --text-error: #d32f2f;
+
+    --border-color: #ccc;
+    --border-sidebar: #ddd;
+
+    --scroll-track: #f1f1f1;
+    --scroll-thumb: #bbb;
+
+    --btn-primary: black;
+    --btn-primary-hover: black;
+    --btn-secondary: #4caf50;
+    --btn-secondary-hover: #45a049;
+    --btn-file: #e0e0e0;
+    --btn-file-hover: #d0d0d0;
+  }
+}
+
 body {
   font-family: sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #1a1a1a;
-  color: #f0f0f0;
+  background-color: var(--bg-body);
+  color: var(--text-main);
   min-height: 100vh;
 }
 
@@ -13,10 +71,10 @@ body {
 }
 
 #history-sidebar {
-  width: 440px; /* Slightly wider */
+  width: 440px;
   padding: 30px;
-  background-color: #1f1f1f;
-  border-right: 1px solid #444; /* Darker border */
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-sidebar);
   height: 100vh;
   overflow-y: auto;
   box-sizing: border-box;
@@ -27,12 +85,12 @@ body {
   width: 8px;
 }
 #history-sidebar::-webkit-scrollbar-track {
-  background: #1f1f1f;
+  background: var(--scroll-track);
 }
 #history-sidebar::-webkit-scrollbar-thumb {
-  background-color: #555;
+  background-color: var(--scroll-thumb);
   border-radius: 4px;
-  border: 2px solid #1f1f1f;
+  border: 2px solid var(--scroll-track);
 }
 
 .history-header {
@@ -43,7 +101,7 @@ body {
 }
 
 #history-sidebar h2 {
-  color: #00bcd4;
+  color: var(--text-accent);
   margin: 0;
   font-size: 24px;
 }
@@ -51,7 +109,7 @@ body {
 #delete-history-button {
   background: none;
   border: none;
-  color: #00bcd4;
+  color: var(--text-accent);
   font-size: 14px;
   font-weight: bold;
   cursor: pointer;
@@ -59,7 +117,7 @@ body {
 }
 
 #delete-history-button:hover {
-  color: #d32f2f; /* Red on hover */
+  color: var(--text-error);
 }
 
 #history-list {
@@ -73,12 +131,13 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: #3a3a3a;
+  background-color: var(--bg-element);
   border-radius: 6px;
   cursor: pointer;
   border-left: 4px solid transparent;
   transition: all 0.2s ease;
   font-size: 14px;
+  color: var(--text-main);
 }
 
 .history-item-prompt {
@@ -88,10 +147,15 @@ body {
   flex-grow: 1;
 }
 
+.history-item-details {
+  /* Ensure details text is readable in light mode */
+  color: var(--text-secondary);
+}
+
 .history-item-delete-button {
   background: none;
   border: none;
-  color: #888;
+  color: #888; /* Keep neutral gray or use var */
   font-size: 18px;
   cursor: pointer;
   transition: color 0.2s ease;
@@ -100,84 +164,82 @@ body {
 }
 
 .history-item-delete-button:hover {
-  color: #d32f2f;
+  color: var(--text-error);
 }
 
 .history-item:hover {
-  background-color: #4a4a4a;
+  background-color: var(--bg-element-hover);
   border-left-color: #777;
 }
 
 .history-item.selected {
-  background-color: #4a4a4a;
-  border-left-color: #00bcd4;
+  background-color: var(--bg-element-hover);
+  border-left-color: var(--text-accent);
   font-weight: bold;
 }
 
 #app {
   padding: 20px;
-  width: calc(100% - 280px); /* Adjust width to account for sidebar */
-  background-color: #2a2a2a;
-  display: flex; /* Make #app a flex container */
-  flex-direction: column; /* Stack children vertically */
-  gap: 20px; /* Add space between sections */
+  width: calc(100% - 280px);
+  background-color: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   height: 100vh;
   box-sizing: border-box;
 }
 
 h1 {
   text-align: center;
-  color: #00bcd4; /* A shade of cyan */
-  margin-bottom: 0; /* Remove default margin */
+  color: var(--text-accent);
+  margin-bottom: 0;
 }
 
 #image-display {
-  /* Moved this up in HTML, so its margin is now handled by #app gap */
-  border: 1px solid #555;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   min-height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #3a3a3a;
-  color: #bbb;
+  background-color: var(--bg-image-display);
+  color: var(--text-secondary);
   text-align: center;
-  flex-grow: 1; /* Allow image display to take available space */
+  flex-grow: 1;
 }
 
 #image-display img {
   max-width: 100%;
-  max-height: 100%; /* Ensure image fits within the container */
+  max-height: 100%;
   height: auto;
   border-radius: 4px;
 }
 
 .controls-container {
-  /* New container for aspect ratio and buttons */
   display: flex;
-  gap: 20px; /* Increased gap */
+  gap: 20px;
   flex-wrap: wrap;
-  align-items: center; /* Align items vertically */
-  justify-content: space-between; /* Space out children */
+  align-items: center;
+  justify-content: space-between;
 }
 
 .file-input-container {
   display: flex;
-  flex-direction: row; /* Arrange children in a row */
-  gap: 10px; /* Space between file input and clear button */
-  align-items: center; /* Align items vertically */
-  color: #bbb;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  color: var(--text-secondary);
 }
 
 #init-image {
-  color: #f0f0f0;
+  color: var(--text-main);
 }
 
 /* Style file input button */
 #init-image::file-selector-button {
   padding: 8px 12px;
-  background-color: #555;
-  color: white;
+  background-color: var(--btn-file);
+  color: var(--text-main);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -185,12 +247,12 @@ h1 {
 }
 
 #init-image::file-selector-button:hover {
-  background-color: #777;
+  background-color: var(--btn-file-hover);
 }
 
 #clear-image-button {
   padding: 8px 12px;
-  background-color: #d32f2f; /* Red for clear */
+  background-color: var(--text-error);
   color: white;
   border: none;
   border-radius: 4px;
@@ -200,7 +262,7 @@ h1 {
 }
 
 #clear-image-button:hover {
-  background-color: #b71c1c; /* Darker red */
+  background-color: #b71c1c;
 }
 
 .aspect-ratio-inputs {
@@ -209,32 +271,32 @@ h1 {
 }
 
 .aspect-ratio-inputs input[type="number"] {
-  width: 100px; /* Fixed width for aspect ratio inputs */
+  width: 100px;
   padding: 10px;
-  border: 1px solid #555;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: #3a3a3a;
-  color: #f0f0f0;
+  background-color: var(--bg-element);
+  color: var(--text-main);
   font-size: 16px;
   text-align: center;
 }
 
 #prompt-input {
-  width: 100%; /* Make textarea take full width */
+  width: 100%;
   padding: 10px;
-  border: 1px solid #555;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  background-color: #3a3a3a;
-  color: #f0f0f0;
+  background-color: var(--bg-element);
+  color: var(--text-main);
   font-size: 16px;
-  resize: vertical; /* Allow vertical resizing */
-  min-height: 80px; /* Increased minimum height for textarea */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-  order: 4; /* Place it at the bottom within #app flex container */
+  resize: vertical;
+  min-height: 80px;
+  box-sizing: border-box;
+  order: 4;
 }
 
 #prompt-input::placeholder {
-  color: #bbb;
+  color: var(--text-secondary);
 }
 
 .button-container {
@@ -243,36 +305,84 @@ h1 {
 }
 
 .icon-button {
-  padding: 10px 15px; /* Adjust padding for icon */
+  padding: 10px 15px;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 20px; /* Larger font for icon */
+  font-size: 20px;
   transition: background-color 0.3s ease;
-  line-height: 1; /* Adjust line height for icon */
+  line-height: 1;
 }
 
 #generate-button {
-  background-color: #00bcd4;
+  background-color: var(--btn-primary);
 }
 
 #download-button {
-  background-color: #4caf50; /* Green for download */
+  background-color: var(--btn-secondary);
 }
 
 #generate-button:hover {
-  background-color: #0097a7; /* Darker cyan */
+  background-color: var(--btn-primary-hover);
 }
 
 #download-button:hover {
-  background-color: #45a049; /* Darker green */
+  background-color: var(--btn-secondary-hover);
 }
 
 span.divider {
   display: inline-block;
   width: 100%;
-  background-color: #777;
+  background-color: #777; /* Keep neutral */
   height: 1px;
   margin: 10px 0;
+}
+
+/* Styles for selects/dropdowns (added to match input style) */
+select {
+  background-color: var(--bg-element) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+label {
+  color: var(--text-secondary) !important;
+}
+
+/* Added styles for Negative Prompt and Progress Bar */
+#negative-prompt {
+  width: 100%;
+  padding: 8px;
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: 4px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+#progress-container {
+  display: none;
+  width: 100%;
+  margin-top: 10px;
+  background-color: var(--bg-element);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#progress-bar {
+  width: 0%;
+  height: 20px;
+  background-color: var(--btn-secondary);
+  transition: width 0.1s ease;
+}
+
+#progress-text {
+  text-align: center;
+  color: var(--text-main); /* Always white for visibility on green bar */
+  font-size: 12px;
+  margin-top: -18px;
+  position: relative;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Add shadow for better contrast */
 }

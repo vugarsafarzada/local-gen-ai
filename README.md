@@ -18,6 +18,8 @@ LocalGen AI is a self-hosted, privacy-first AI image generation platform. It run
 *   **Real-time Feedback:** Live progress bar powered by WebSockets.
 *   **Deep Linking:** Shareable URLs for specific generated images (`?id=...`).
 *   **Multi-Page Layout:** Separate Landing, About, and Generator pages.
+*   **Auto-Theme:** Automatically switches between Light and Dark modes based on system settings.
+*   **Extended Model Support:** Robust loading for SD1.5, SDXL, SD3, Flux, and Pony models.
 *   **History Gallery:** Automatically saves generated images and metadata (including model used). Click history items to restore settings.
 *   **Privacy Focused:** All processing happens on your machine.
 
