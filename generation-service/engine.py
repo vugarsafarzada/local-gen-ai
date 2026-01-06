@@ -129,6 +129,14 @@ def set_scheduler(pipeline, scheduler_id: str):
             use_karras_sigmas=True,
             algorithm_type="dpmsolver++"
         )
+    elif scheduler_id == "DPM++ 3M SDE Exponential":
+        pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
+            pipeline.scheduler.config,
+            solver_order=3,
+            use_karras_sigmas=False,
+            algorithm_type="sde-dpmsolver++",
+            use_exponential_sigmas=True
+        )
     elif scheduler_id == "DDIM":
         pipeline.scheduler = DDIMScheduler.from_config(pipeline.scheduler.config)
     elif scheduler_id == "UniPC":
